@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 	<head>
-    <meta charset="utf-8">
-    <title>Golemio explorer</title>
+		<meta charset="utf-8">
+		<title>Golemio explorer</title>
 	<style>
 	th {
 		font-family: sans-serif;
@@ -32,40 +32,40 @@
 		font-family: monospace;
 	}
 	</style>
-	
-  </head>
-  <body>
-  <div class="help"><span>Kódy zastávek oddělené <em>středníkem</em>, lze použít kódy GTFS, kódy ASW (stanoviště volitelně oddělené podtržítkem 123_1), kódy CIS s prefixem C (C12345) a přesná jména (Českomoravská).</span></div>
- Zastávky: <input type="text" id="input">
- Čas před: <input type="number" value="0" id="before" size="3">
- Čas po: <input type="number" value="60" id="after" size="3">
- Počet hodnot: <input type="number"  id="limit" size="3">
- Řadit dle JŘ: <input type="checkbox" id="order">
- Nejdřív linky: <input type="checkbox" id="routesfirst">
- Ofset: <input type="number" value="0" id="offset" size="2">
- Mode: <select id="mode">
+
+	</head>
+	<body>
+	<div class="help"><span>Kódy zastávek oddělené <em>středníkem</em>, lze použít kódy GTFS, kódy ASW (stanoviště volitelně oddělené podtržítkem 123_1), kódy CIS s prefixem C (C12345) a přesná jména (Českomoravská).</span></div>
+	Zastávky: <input type="text" id="input">
+	Čas před: <input type="number" value="0" id="before" size="3">
+	Čas po: <input type="number" value="60" id="after" size="3">
+	Počet hodnot: <input type="number"  id="limit" size="3">
+	Řadit dle JŘ: <input type="checkbox" id="order">
+	Nejdřív linky: <input type="checkbox" id="routesfirst">
+	Ofset: <input type="number" value="0" id="offset" size="2">
+	Mode: <select id="mode">
 	<option value="departures" selected>departures</option>
 	<option value="arrivals">arrivals</option>
 	<option value="mixed">mixed</option>
 	</select>
- <input type="submit" id="submit">
-  <div id="uri"></div>
-  <div id="stops"></div>
-  <div id="departures"></div>
-  <div id="infotexts"></div>
-  <script src="key.js"></script>
-  <script>
+	<input type="submit" id="submit">
+	<div id="uri"></div>
+	<div id="stops"></div>
+	<div id="departures"></div>
+	<div id="infotexts"></div>
+	<script src="key.js"></script>
+	<script>
 		const stopDestination = document.getElementById("stops");
 		const departuresDestination = document.getElementById("departures");
 		const infotextDestination = document.getElementById("infotexts");
 		const form = document.querySelectorAll('input');
-		
+
 		function process(json){
 			if (json === "[]"){
 				content.innerHTML = "";
 				return;
 			}
-			
+
 			stops = JSON.parse(json).stops;
 			let data = [];
 			for (let value in stops){
@@ -73,8 +73,8 @@
 			}
 			if (typeof data === "undefined" || data.length === 0) return;
 			let keys = Object.keys(data[0]);
-			stopDestination.innerHTML = buildHtmlTable(data).outerHTML;			
-		
+			stopDestination.innerHTML = buildHtmlTable(data).outerHTML;
+
 			departures = JSON.parse(json).departures;
 			data = [];
 			for (let value in departures){
@@ -84,12 +84,12 @@
 			//const keyss = Object.keys(data[0]);
 			departuresDestination.innerHTML = buildHtmlTable(data).outerHTML;
 		}
-			
+
 		// Flattens a JSON object
 		function flatten (obj, prefix, current) {
 			prefix = prefix || []
 			current = current || {}
-			
+
 			// Remember kids, null is also an object!
 			if (typeof (obj) === 'object' && obj !== null) {
 				Object.keys(obj).forEach(key => {
@@ -98,10 +98,10 @@
 			} else {
 				current[prefix.join('.')] = obj
 			}
-			
+
 			return current;
 		}
-		
+
 		var _table_ = document.createElement('table'),
 		_tr_ = document.createElement('tr'),
 		_th_ = document.createElement('th'),
@@ -125,7 +125,7 @@
 			}
 			return table;
 		}
-		
+
 		// Adds a header row to the table and returns the set of columns.
 		// Need to do union of keys from all records as some records may not contain
 		// all records
@@ -155,8 +155,8 @@
 			const offset = document.getElementById("offset").value;
 			const submit = document.getElementById("submit");
 			const uri = document.getElementById("uri");
-			const mode = document.getElementById("mode").value;										  
-			
+			const mode = document.getElementById("mode").value;
+
 			let parameters = new Array;
 			parameters.push(before ? "minutesBefore=" + before : "");
 			parameters.push(after ? "minutesAfter=" + after : "");
@@ -164,10 +164,10 @@
 			parameters.push(order ? "orderBySchedule=true" : "");
 			parameters.push(routesfirst ? "showAllRoutesFirst=true" : "");
 			parameters.push(offset ? "offset=" + offset : "");
-			parameters.push(mode ? "mode=" + mode : "");								   
-			
+			parameters.push(mode ? "mode=" + mode : "");
+
 			[stopDestination,departuresDestination,infotextDestination].forEach(function(element){element.innerHTML = ""});
-			
+
 			const gtfs = new RegExp(/^U.+$/,"i");
 			const asw = new RegExp(/^\d{1,4}(_\d{1,3})?$/);
 			const cis = new RegExp(/^c\d{1,7}$/,"i");
@@ -188,16 +188,16 @@
 					parameters.push("names="+element);
 				}
 			})
-			
+
 			query = parameters.filter(Boolean).join("&");
-			
+
 			uri.innerHTML = query;
 			let request = new XMLHttpRequest();
 			url = "https://api.golemio.cz/v2/pid/departureboards/?preferredTimezone=Europe/Prague&" + query;
 			request.open('GET', url);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 			request.setRequestHeader('x-access-token', KEY);
-			
+
 			request.onreadystatechange = function () {
 				if (this.readyState === 4) {
 					process(this.response);
@@ -209,7 +209,7 @@
 			}
 			request.send();
 		}
-		
+
 		form.forEach(function(elem) {
 			elem.addEventListener("keydown", function() {
 			if (!e) { var e = window.event }
@@ -222,7 +222,7 @@
 		submit.addEventListener("click",function(){
 			send();
 		});
-    </script>
+		</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 
 </body></html>
