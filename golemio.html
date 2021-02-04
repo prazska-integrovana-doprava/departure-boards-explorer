@@ -48,6 +48,7 @@
 	<option value="arrivals">arrivals</option>
 	<option value="mixed">mixed</option>
 	</select>
+	Čas dotazu: <input type="datetime-local" id="timestamp">
 	<input type="submit" id="submit">
 	<div id="uri"></div>
 	<div id="stops"></div>
@@ -156,6 +157,7 @@
 			const submit = document.getElementById("submit");
 			const uri = document.getElementById("uri");
 			const mode = document.getElementById("mode").value;
+			const timestamp = document.getElementById("timestamp").value;
 
 			let parameters = new Array;
 			parameters.push(before ? "minutesBefore=" + before : "");
@@ -165,6 +167,7 @@
 			parameters.push(routesfirst ? "showAllRoutesFirst=true" : "");
 			parameters.push(offset ? "offset=" + offset : "");
 			parameters.push(mode ? "mode=" + mode : "");
+			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(timestamp + moment().format('Z')) : "");
 
 			[stopDestination,departuresDestination,infotextDestination].forEach(function(element){element.innerHTML = ""});
 
