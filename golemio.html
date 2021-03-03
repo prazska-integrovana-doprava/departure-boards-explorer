@@ -170,7 +170,7 @@
 			parameters.push(routesfirst ? "showAllRoutesFirst=true" : "");
 			parameters.push(offset ? "offset=" + offset : "");
 			parameters.push(mode ? "mode=" + mode : "");
-			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(timestamp + moment().format('Z')) : "");
+			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).format("YYYY-MM-DDTHH:mm:ssZ")) : "");
 
 			[stopDestination,departuresDestination,infotextDestination].forEach(function(element){element.innerHTML = ""});
 
