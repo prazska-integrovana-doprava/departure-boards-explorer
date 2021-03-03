@@ -121,7 +121,7 @@
 				var td = _td_.cloneNode(false);
 				cellValue = arr[i][columns[j]];
 				let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ss.SSSZZ",true);
-				if (date.isValid()) {cellValue = date.format("YYYY-MM-DD HH:mm:SS")}
+				if (date.isValid()) {cellValue = date.format("YYYY-MM-DD HH:mm:ss")}
 				td.appendChild(document.createTextNode(cellValue));
 				tr.appendChild(td);
 				}
