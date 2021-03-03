@@ -7,5 +7,5 @@ A quick and dirty tool to view the contents of Golemio departure boards
 3) Put files `key.js` and `golemio.html` in a folder
 4) Open `golemio.html` in your browser
 
-## Documentation
+## Golemio documentation
 [Documentation of Golemio departure boards API](https://golemioapi.docs.apiary.io/#reference/public-transport/pid-departure-boards)
