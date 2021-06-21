@@ -114,8 +114,8 @@
 
 			// Remember kids, null is also an object!
 			if (typeof (obj) === 'object' && obj !== null) {
-				Object.keys(obj).forEach(key => {
-				this.flatten(obj[key], prefix.concat(key), current)
+					Object.keys(obj).forEach(key => {
+					this.flatten(obj[key], prefix.concat(key), current)
 				})
 			} else {
 				current[prefix.join('.')] = obj
@@ -136,12 +136,12 @@
 			for (var i = 0, maxi = arr.length; i < maxi; ++i) {
 				var tr = _tr_.cloneNode(false);
 				for (var j = 0, maxj = columns.length; j < maxj; ++j) {
-				var td = _td_.cloneNode(false);
-				cellValue = arr[i][columns[j]];
-				let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ss.SSSZZ",true);
-				if (date.isValid()) {cellValue = date.format("YYYY-MM-DD HH:mm:ss")}
-				td.appendChild(document.createTextNode(cellValue));
-				tr.appendChild(td);
+					var td = _td_.cloneNode(false);
+					cellValue = arr[i][columns[j]];
+					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ss.SSSZZ",true);
+					if (date.isValid()) {cellValue = date.format("YYYY-MM-DD HH:mm:ss")}
+					td.appendChild(document.createTextNode(cellValue));
+					tr.appendChild(td);
 				}
 				table.appendChild(tr);
 			}
