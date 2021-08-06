@@ -105,6 +105,14 @@
 			if (typeof data === "undefined") return;
 			//const keyss = Object.keys(data[0]);
 			departuresDestination.innerHTML = buildHtmlTable(data).outerHTML;
+
+			infotexts = JSON.parse(json).infotexts;
+			data = [];
+			for (let value in infotexts){
+				data.push(flatten(infotexts[value]));
+			}
+			if (typeof data === "undefined") return;
+			infotextDestination.innerHTML = buildHtmlTable(data).outerHTML;
 		}
 
 		// Flattens a JSON object
