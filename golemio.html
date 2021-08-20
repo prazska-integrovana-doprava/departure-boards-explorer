@@ -34,8 +34,14 @@
 	.help {
 		padding: 2px;
 	}
-	#uri {
+	#direct {
 		font-family: monospace;
+		display: block;
+		width: 100%;
+	}
+	#output {
+		font-family: monospace;
+		background-color: pink;
 	}
 	</style>
 
@@ -71,7 +77,8 @@
 	</select></label>
 	<label>Čas dotazu: <input type="datetime-local" id="timestamp"></label>
 	<input type="submit" id="submit">
-	<div id="uri"></div>
+	<input type="search" id="direct" placeholder="Připravený řetězec dotazu">
+	<div id="output"></div>
 	<div id="stops"></div>
 	<div id="departures"></div>
 	<div id="infotexts"></div>
@@ -81,6 +88,8 @@
 		const departuresDestination = document.getElementById("departures");
 		const infotextDestination = document.getElementById("infotexts");
 		const form = document.querySelectorAll('input');
+		let query;
+		prepareUri();
 
 		function process(json){
 			if (json === "[]"){
@@ -103,7 +112,6 @@
 				data.push(flatten(departures[value]));
 			}
 			if (typeof data === "undefined") return;
-			//const keyss = Object.keys(data[0]);
 			departuresDestination.innerHTML = buildHtmlTable(data).outerHTML;
 
 			infotexts = JSON.parse(json).infotexts;
@@ -175,7 +183,7 @@
 			table.appendChild(tr);
 			return columnSet;
 		}
-		function send(){
+		function prepareUri(){
 			const input = document.getElementById("input").value;
 			const before = document.getElementById("before").value;
 			const after = document.getElementById("after").value;
@@ -188,7 +196,12 @@
 			let skip = document.getElementById("skip").selectedOptions;
 			const timestamp = document.getElementById("timestamp").value;
 			const submit = document.getElementById("submit");
-			const uri = document.getElementById("uri");
+			const direct = document.getElementById("direct");
+			if (direct.value.length > 0 && direct.value !== query) {
+				query = direct.value;
+				output.innerHTML = query;
+				return;
+			}
 
 			let parameters = new Array;
 			// Input is processed below
@@ -202,8 +215,6 @@
 			parameters.push(order === "real" ? "order=real" : "order=timetable");
 			parameters.push([...skip].map(element => "skip[]=" + element.value).join("&"));
 			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).format("YYYY-MM-DDTHH:mm:ss")) : "");
-
-			[stopDestination,departuresDestination,infotextDestination].forEach(function(element){element.innerHTML = ""});
 
 			// Process Input
 			const gtfs = new RegExp(/^U\d+.+$/,"i");
@@ -228,8 +239,16 @@
 			})
 
 			query = parameters.filter(Boolean).join("&");
+			output.innerHTML = query;
+		}
 
-			uri.innerHTML = query;
+		function send(){
+			prepareUri();
+			[stopDestination,departuresDestination,infotextDestination].forEach(
+				function(element){
+					element.innerHTML = ""
+				});
+
 			let request = new XMLHttpRequest();
 			url = "https://api.golemio.cz/v2/pid/departureboards/?preferredTimezone=Europe/Prague&" + query;
 			request.open('GET', url);
@@ -249,11 +268,13 @@
 		}
 
 		form.forEach(function(elem) {
+			elem.addEventListener("change", function() {
+				prepareUri();
+			});
+
 			elem.addEventListener("keydown", function() {
-			if (!e) { var e = window.event }
-			if (e.keyCode == 13) {
-				send()
-			}
+				if (!e) {var e = window.event}
+				if (e.keyCode === 13)	send();
 			});
 		});
 
