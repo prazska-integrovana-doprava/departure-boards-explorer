@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<title>Golemio explorer</title>
+	<meta charset="utf-8">
+	<title>Golemio explorer</title>
 	<style>
 	body {
 		background-color: white;
@@ -91,6 +91,7 @@
 		let query;
 		prepareUri();
 
+		/* Build tables from received JSON */
 		function process(json){
 			if (json === "[]"){
 				content.innerHTML = "";
@@ -172,17 +173,19 @@
 				tr = _tr_.cloneNode(false);
 			for (var i = 0, l = arr.length; i < l; i++) {
 				for (var key in arr[i]) {
-				if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
-					columnSet.push(key);
-					var th = _th_.cloneNode(false);
-					th.appendChild(document.createTextNode(key.replace(/([._])/g,"$1​"))); // Achtung, Zero width space!
-					tr.appendChild(th);
-				}
+					if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+						columnSet.push(key);
+						var th = _th_.cloneNode(false);
+						th.appendChild(document.createTextNode(key.replace(/([._])/g,"$1​"))); // Achtung, Zero width space!
+						tr.appendChild(th);
+					}
 				}
 			}
 			table.appendChild(tr);
 			return columnSet;
 		}
+
+		/* Collect all values from forms and prepare a query string */
 		function prepareUri(){
 			const input = document.getElementById("input").value;
 			const before = document.getElementById("before").value;
@@ -281,7 +284,8 @@
 		submit.addEventListener("click",function(){
 			send();
 		});
-		</script>
+	</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 
-</body></html>
+</body>
+</html>
