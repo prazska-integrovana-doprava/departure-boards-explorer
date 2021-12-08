@@ -163,6 +163,7 @@
 					cellValue = arr[i][columns[j]];
 					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ss.SSSZZ",true);
 					if (date.isValid()) {cellValue = `<abbr title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</abbr>`}
+					if (cellValue === null) cellValue = "<i>null</i>"
 					td.innerHTML = cellValue;
 					tr.appendChild(td);
 				}
