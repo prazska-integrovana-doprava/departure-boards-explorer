@@ -7,6 +7,10 @@
 	body {
 		background-color: white;
 	}
+	abbr {
+		text-decoration-color: #c6c6c6;
+		cursor: help;
+	}
 	th {
 		font-family: sans-serif;
 		background-color: #777;
@@ -158,8 +162,8 @@
 					var td = _td_.cloneNode(false);
 					cellValue = arr[i][columns[j]];
 					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ss.SSSZZ",true);
-					if (date.isValid()) {cellValue = date.format("YYYY-MM-DD HH:mm:ss")}
-					td.appendChild(document.createTextNode(cellValue));
+					if (date.isValid()) {cellValue = `<abbr title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</abbr>`}
+					td.innerHTML = cellValue;
 					tr.appendChild(td);
 				}
 				table.appendChild(tr);
