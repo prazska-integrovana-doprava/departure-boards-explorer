@@ -161,7 +161,7 @@
 				for (var j = 0, maxj = columns.length; j < maxj; ++j) {
 					var td = _td_.cloneNode(false);
 					cellValue = arr[i][columns[j]];
-					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ss.SSSZZ",true);
+					let date = moment(cellValue,true);
 					if (date.isValid()) {cellValue = `<abbr title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</abbr>`}
 					if (cellValue === null) cellValue = "<i>null</i>"
 					td.innerHTML = cellValue;
