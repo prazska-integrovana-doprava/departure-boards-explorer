@@ -7,7 +7,9 @@
 	body {
 		background-color: white;
 	}
-	abbr {
+	time[title] {
+		text-decoration-style: dashed;
+		text-decoration-line: underline;
 		text-decoration-color: #c6c6c6;
 		cursor: help;
 	}
@@ -162,7 +164,7 @@
 					var td = _td_.cloneNode(false);
 					cellValue = arr[i][columns[j]];
 					let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
-					if (date.isValid()) {cellValue = `<abbr title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</abbr>`}
+					if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
 					if (cellValue === null) cellValue = "<i>null</i>"
 					td.innerHTML = cellValue;
 					tr.appendChild(td);
