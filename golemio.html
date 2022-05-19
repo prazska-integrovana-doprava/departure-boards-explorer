@@ -51,6 +51,10 @@
 		margin: 3px 0px;
 		padding: 2px 1px;
 	}
+	#time {
+		margin-top: 3px;
+		font-size: smaller;
+	}
 	</style>
 
 	</head>
@@ -90,23 +94,29 @@
 	<div id="stops"></div>
 	<div id="departures"></div>
 	<div id="infotexts"></div>
+	<div id="time"></div>
 	<script src="key.js"></script>
 	<script>
 		const stopDestination = document.getElementById("stops");
 		const departuresDestination = document.getElementById("departures");
 		const infotextDestination = document.getElementById("infotexts");
+		const time = document.getElementById("time");
 		const form = document.querySelectorAll('input');
 		let query;
 		prepareUri();
 
 		/* Build tables from received JSON */
 		function process(json){
+
+			// Handle no departures case
 			if (json === "[]"){
 				content.innerHTML = "";
 				return;
 			}
 
-			stops = JSON.parse(json).stops;
+			time.innerHTML = "Odpověď za " + json.time + " ms";
+
+			stops = json.stops;
 			let data = [];
 			for (let value in stops){
 				data.push(flatten(stops[value]));
@@ -115,7 +125,7 @@
 			let keys = Object.keys(data[0]);
 			stopDestination.innerHTML = buildHtmlTable(data).outerHTML;
 
-			departures = JSON.parse(json).departures;
+			departures = json.departures;
 			data = [];
 			for (let value in departures){
 				data.push(flatten(departures[value]));
@@ -123,7 +133,7 @@
 			if (typeof data === "undefined") return;
 			departuresDestination.innerHTML = buildHtmlTable(data).outerHTML;
 
-			infotexts = JSON.parse(json).infotexts;
+			infotexts = json.infotexts;
 			data = [];
 			for (let value in infotexts){
 				data.push(flatten(infotexts[value]));
@@ -262,6 +272,7 @@
 				});
 
 			let request = new XMLHttpRequest();
+			request.start = moment.now();
 			url = "https://api.golemio.cz/v2/pid/departureboards/?" + query;
 			request.open('GET', url);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
@@ -269,7 +280,12 @@
 
 			request.onreadystatechange = function () {
 				if (this.readyState === 4) {
-					process(this.response);
+					request.stop = moment.now();
+					this.time = request.stop - request.start;
+					let json = JSON.parse(this.response);
+					json.time = request.stop - request.start;
+					console.log(json);
+					process(json);
 				}
 				else if (this.status != 200) {
 					stopDestination.innerHTML = "HTTP " + this.status;
