@@ -114,8 +114,10 @@
 				return;
 			}
 
+			// Print processing time
 			time.innerHTML = "Odpověď za " + json.time + " ms";
 
+			// For every chapten in JSON, print contents to table
 			stops = json.stops;
 			let data = [];
 			for (let value in stops){
@@ -239,10 +241,13 @@
 			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).format("YYYY-MM-DDTHH:mm:ss")) : "");
 
 			// Process Input
+			// Masks used to detect correct station ID
 			const gtfs = new RegExp(/^U\d+.+$/,"i");
 			const asw = new RegExp(/^\d{1,4}(_\d{1,3})?$/);
 			const cis = new RegExp(/^c\d{1,7}$/,"i");
 			const name = new RegExp(/^[\p{Letter}\p{Number},. -]+$/,"iu");
+
+			// Sort the IDs accordingly
 			let array = input.split(";");
 			array.forEach(function(value){
 				let element = value.trim();
@@ -260,19 +265,23 @@
 				}
 			})
 
+			// Print the query string on screen
 			query = parameters.filter(Boolean).join("&");
 			output.innerHTML = query;
 		}
 
+		// Send repquest
 		function send(){
 			prepareUri();
+
+			// Clear any current tables
 			[stopDestination,departuresDestination,infotextDestination].forEach(
 				function(element){
 					element.innerHTML = ""
 				});
 
 			let request = new XMLHttpRequest();
-			request.start = moment.now();
+			request.start = moment.now(); // Start timer
 			url = "https://api.golemio.cz/v2/pid/departureboards/?" + query;
 			request.open('GET', url);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
@@ -280,11 +289,12 @@
 
 			request.onreadystatechange = function () {
 				if (this.readyState === 4) {
+					// Timing the query
 					request.stop = moment.now();
 					this.time = request.stop - request.start;
+					// Add the result time to JSON response
 					let json = JSON.parse(this.response);
 					json.time = request.stop - request.start;
-					console.log(json);
 					process(json);
 				}
 				else if (this.status != 200) {
@@ -295,11 +305,12 @@
 			request.send();
 		}
 
+		// Update the query string when changing any form value
 		form.forEach(function(elem) {
 			elem.addEventListener("change", function() {
 				prepareUri();
 			});
-
+			// Send from on pressing enter
 			elem.addEventListener("keydown", function() {
 				if (!e) {var e = window.event}
 				if (e.keyCode === 13)	send();
@@ -310,7 +321,7 @@
 			send();
 		});
 	</script>
+	// Moment.js for processing time strings
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
-
 </body>
 </html>
