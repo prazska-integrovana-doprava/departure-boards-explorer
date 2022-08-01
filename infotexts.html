@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Golemio infotexts explorer</title>
+		<style>
+			time[title] {
+				text-decoration-style: dashed;
+				text-decoration-line: underline;
+				text-decoration-color: #c6c6c6;
+				cursor: help;
+			}
+			th {
+				font-family: sans-serif;
+				background-color: #777;
+				font-size: 12px;
+				color: white;
+				font-weight: normal;
+			}
+			tr:nth-child(odd) {
+				background-color: #eee;
+				}
+			tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+			td {
+				white-space: nowrap;
+			}
+			#output {
+				font-family: monospace;
+				background-color: #d8f2ff;
+				margin: 3px 0px;
+				padding: 2px 1px;
+			}
+			#time {
+				margin-top: 3px;
+				font-size: smaller;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="content"></div>
+		<div id="time"></div>
+		<script src="key.js"></script>
+		<script>
+				window.onload = function() {
+					let request = new XMLHttpRequest();
+					request.start = moment.now(); // Start timer
+					url = "https://api.golemio.cz/v2/pid/infotexts";
+					request.open('GET', url);
+					request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+					request.setRequestHeader('x-access-token', KEY);
+
+					request.onreadystatechange = function () {
+						if (this.readyState === 4) {
+							// Timing the query
+							request.stop = moment.now();
+							const processTime = request.stop - request.start;
+							document.getElementById("time").textContent = "Odpověď za " + processTime + " ms";
+							// Printing the data
+							let json = JSON.parse(this.response);
+							document.getElementById("content").appendChild(printTable(json));
+						}
+						else if (this.status != 200) {
+							content.textContent = "HTTP " + this.status;
+							return;
+						}
+					}
+					request.send();
+				};
+					/* Build tables from received JSON */
+					function printTable(json){
+						// Handle no departures case
+						if (json.length === 0){
+							return "Nejsou aktivní žádné infotexty.";
+						}
+						return buildHtmlTable(json);
+					}
+
+					var _table_ = document.createElement('table'),
+					_tr_ = document.createElement('tr'),
+					_th_ = document.createElement('th'),
+					_td_ = document.createElement('td');
+
+					// Builds the HTML Table out of myList json data from Ivy restful service.
+					function buildHtmlTable(arr) {
+						var table = _table_.cloneNode(false),
+							columns = addAllColumnHeaders(arr, table);
+						for (var i = 0, maxi = arr.length; i < maxi; ++i) {
+							var tr = _tr_.cloneNode(false);
+							for (var j = 0, maxj = columns.length; j < maxj; ++j) {
+								var td = _td_.cloneNode(false);
+								cellValue = arr[i][columns[j]];
+								let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
+								if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
+								if (cellValue === null) cellValue = "<i>null</i>"
+								td.innerHTML = cellValue;
+								tr.appendChild(td);
+							}
+							table.appendChild(tr);
+						}
+						return table;
+					}
+
+					// Adds a header row to the table and returns the set of columns.
+					// Need to do union of keys from all records as some records may not contain
+					// all records
+					function addAllColumnHeaders(arr, table) {
+						var columnSet = [],
+							tr = _tr_.cloneNode(false);
+						for (var i = 0, l = arr.length; i < l; i++) {
+							for (var key in arr[i]) {
+								if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+									columnSet.push(key);
+									var th = _th_.cloneNode(false);
+									th.appendChild(document.createTextNode(key.replace(/([._])/g,"$1​"))); // Achtung, Zero width space!
+									tr.appendChild(th);
+								}
+							}
+						}
+						table.appendChild(tr);
+						return columnSet;
+					}
+		</script>
+		<!-- Moment.js for processing time strings -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+	</body>
+</html>
