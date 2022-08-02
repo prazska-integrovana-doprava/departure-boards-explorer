@@ -72,7 +72,9 @@
 					function printTable(json){
 						// Handle no departures case
 						if (json.length === 0){
-							return "Nejsou aktivní žádné infotexty.";
+							message = document.createElement('span');
+							message.innerHTML = "Nejsou aktivní žádné infotexty.";
+							return message;
 						}
 						return buildHtmlTable(json);
 					}
