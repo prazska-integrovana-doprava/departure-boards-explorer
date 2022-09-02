@@ -60,6 +60,10 @@
 	</head>
 	<body>
 	<div class="help"><span>Kódy zastávek oddělené <em>středníkem</em>, lze použít kódy GTFS, kódy ASW (stanoviště volitelně oddělené podtržítkem 123_1), kódy CIS s prefixem C (C12345) a přesná jména (Českomoravská).</span></div>
+	<label>Zdroj: <select id="source">
+		<option value="api">Produkční</option>
+		<option value="rabin">Testovací</option>
+	</select></label>
 	<label>Zastávky: <input type="text" id="input"></label>
 	<label>Čas před: <input type="number" value="" id="before" size="3"></label>
 	<label>Čas po: <input type="number" value="60" id="after" size="3"></label>
@@ -75,6 +79,7 @@
 		<option value="routeHeadingOnceNoGap">route heading once no gap</option>
 		<option value="routeHeadingOnceNoGapFill">route heading once no gap fill</option>
 	</select></label>
+	<label>Připojovat vlaky:<input type="checkbox" id="joinTrains"></label>
 	<label>Řazení: <select id="order">
 		<option value="real">skutečné</option>
 		<option value="timetable">dle JŘ</option>
@@ -104,6 +109,19 @@
 		const infotextDestination = document.getElementById("infotexts");
 		const time = document.getElementById("time");
 		const form = document.querySelectorAll('input');
+
+		/* Change background color on source change */
+		function changeColor(){
+			const colorTable = {
+				"rabin" : "rgb(237, 226, 240)",
+				"api" : "white"
+			}
+			document.getElementsByTagName("body")[0].style.backgroundColor = colorTable[source.value];
+		}
+		const source = document.getElementById('source');
+		source.addEventListener("change", changeColor);
+		changeColor();
+
 		let query;
 		prepareUri();
 
@@ -217,6 +235,7 @@
 			const offset = document.getElementById("offset").value;
 			const total = document.getElementById("total").value;
 			const mode = document.getElementById("mode").value;
+			const includeMetroTrains = document.getElementById("joinTrains").checked;
 			const filter = document.getElementById("filter").value;
 			const order = document.getElementById("order").value;
 			let skip = document.getElementById("skip").selectedOptions;
@@ -238,6 +257,7 @@
 			parameters.push(total ? "total=" + total : "");
 			parameters.push(mode ? "mode=" + mode : "");
 			parameters.push(filter ? "filter=" + filter : "");
+			parameters.push(includeMetroTrains ? "includeMetroTrains=" + includeMetroTrains : "");
 			parameters.push(order === "real" ? "order=real" : "order=timetable");
 			parameters.push([...skip].map(element => "skip[]=" + element.value).join("&"));
 			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).format("YYYY-MM-DDTHH:mm:ss")) : "");
@@ -269,7 +289,7 @@
 
 			// Print the query string on screen
 			query = parameters.filter(Boolean).join("&");
-			output.innerHTML = query;
+			output.innerHTML = `${source.value}: ${query}`;
 		}
 
 		// Send repquest
@@ -283,12 +303,12 @@
 				});
 
 			let request = new XMLHttpRequest();
+			const source = document.getElementById("source").value;
 			request.start = moment.now(); // Start timer
-			url = "https://api.golemio.cz/v2/pid/departureboards/?" + query;
+			url = `https://${source}.golemio.cz/v2/pid/departureboards/?${query}`;
 			request.open('GET', url);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-			request.setRequestHeader('x-access-token', KEY);
-
+			request.setRequestHeader('x-access-token', (source === "api") ? KEY : RKEY);
 			request.onreadystatechange = function () {
 				if (this.readyState === 4) {
 					// Timing the query
