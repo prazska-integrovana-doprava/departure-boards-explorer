@@ -63,7 +63,12 @@
 							document.getElementById("time").textContent = "Odpověď za " + processTime + " ms";
 							// Printing the data
 							let json = JSON.parse(this.response);
-							document.getElementById("content").appendChild(printTable(json));
+							console.log(flatten(json));
+							let toPrint = [];
+							for (let value in json){
+								toPrint.push(flatten(json[value]));
+							}
+							document.getElementById("content").appendChild(printTable(toPrint));
 						}
 						else if (this.status != 200) {
 							content.textContent = "HTTP " + this.status;
@@ -82,6 +87,21 @@
 						}
 						return buildHtmlTable(json);
 					}
+				// Flattens a JSON object
+				function flatten (obj, prefix, current) {
+					prefix = prefix || []
+					current = current || {}
+
+					// Remember kids, null is also an object!
+					if (typeof (obj) === 'object' && obj !== null) {
+						Object.keys(obj).forEach(key => {
+							this.flatten(obj[key], prefix.concat(key), current)
+						})
+					} else {
+						current[prefix.join('.')] = obj
+					}
+					return current;
+				}
 
 					var _table_ = document.createElement('table'),
 					_tr_ = document.createElement('tr'),
@@ -99,7 +119,14 @@
 								cellValue = arr[i][columns[j]];
 								let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
 								if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
-								if (cellValue === null) cellValue = "<i>null</i>"
+								if (cellValue === null) cellValue = "<i>null</i>";
+								if (typeof cellValue === "object") {
+									cellValue.forEach((item, i) => {
+										cellValue = flatten(item);
+										td.append(cellValue);
+										console.log(cellValue);
+									});
+								}
 								td.innerHTML = cellValue;
 								tr.appendChild(td);
 							}
