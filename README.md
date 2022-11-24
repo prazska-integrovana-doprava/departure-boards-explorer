@@ -8,4 +8,4 @@ A quick and dirty tool to view the contents of Golemio departure boards
 4) Open `golemio.html` in your browser
 
 ## Golemio documentation
-[Documentation of Golemio PID departure boards API](https://golemioapi.docs.apiary.io/#reference/public-transport/pid-departure-boards)
+[Documentation of Golemio PID departure boards API](https://api.golemio.cz/v2/pid/docs/openapi/)
