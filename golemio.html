@@ -27,6 +27,20 @@
 	tr:nth-child(even) {
 		background-color: #f9f9f9;
 	}
+	tr:not(:first-of-type):before {
+		content: counter(tr);
+		counter-increment: tr;
+		font-size: 60%;
+	}
+	tr:first-of-type{
+		background-color: #777;
+	}
+	tr:first-of-type:before {
+		content: "";
+	}
+	table {
+		counter-reset: tr 0;
+	}
 	td {
 		white-space: nowrap;
 	}
