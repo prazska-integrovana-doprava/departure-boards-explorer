@@ -1,1 +1,0 @@
-const KEY = '<INSERT YOUR KEY HERE>';
