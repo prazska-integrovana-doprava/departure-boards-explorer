@@ -73,6 +73,9 @@
 	#stops, #departures, #infotexts {
 		width: 100%;
 	}
+	a:visited {
+		color: LinkText;
+	}
 	</style>
 
 	</head>
@@ -215,7 +218,10 @@
 					cellValue = arr[i][columns[j]];
 					let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
 					if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
-					if (cellValue === null) cellValue = "<i>null</i>"
+					if (cellValue === null) cellValue = "<i>null</i>";
+					if (columns[j] === "stop_id" && arr[i].stop_lat > 0 && arr[i].stop_lon > 0) {
+						cellValue = `<a href="https://mapa.pid.cz/?zoom=18&lon=${arr[i].stop_lon}&lat=${arr[i].stop_lat}" target="_blank">${arr[i].stop_id}</a>`;
+					}
 					td.innerHTML = cellValue;
 					tr.appendChild(td);
 				}
