@@ -101,6 +101,7 @@
 		<option value="routeHeadingOnceNoGapFill">route heading once no gap fill</option>
 	</select></label>
 	<label>Připojovat vlaky:<input type="checkbox" id="joinTrains"></label>
+	<label>Klimatizace:<input type="checkbox" id="airCondition" checked></label>
 	<label>Řazení: <select id="order">
 		<option value="real">skutečné</option>
 		<option value="timetable">dle JŘ</option>
@@ -260,6 +261,7 @@
 			const total = document.getElementById("total").value;
 			const mode = document.getElementById("mode").value;
 			const includeMetroTrains = document.getElementById("joinTrains").checked;
+			const airCondition = document.getElementById("airCondition").checked;
 			const filter = document.getElementById("filter").value;
 			const order = document.getElementById("order").value;
 			let skip = document.getElementById("skip").selectedOptions;
@@ -282,6 +284,7 @@
 			parameters.push(mode ? "mode=" + mode : "");
 			parameters.push(filter ? "filter=" + filter : "");
 			parameters.push(includeMetroTrains ? "includeMetroTrains=" + includeMetroTrains : "");
+			parameters.push(airCondition ? "" : "airCondition=" + airCondition);
 			parameters.push(order === "real" ? "order=real" : "order=timetable");
 			parameters.push([...skip].map(element => "skip[]=" + element.value).join("&"));
 			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).format("YYYY-MM-DDTHH:mm:ss")) : "");
