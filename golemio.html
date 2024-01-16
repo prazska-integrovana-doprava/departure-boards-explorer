@@ -5,8 +5,16 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Golemio explorer</title>
 	<style>
-	body {
+	:root {
+		--stops-column-count: 0;
+		--departures-column-count: 0;
+		--infotexts-column-count: 0;
+	}
+	body.api {
 		background-color: white;
+	}
+	body.rabin {
+		background-color: rgb(237, 226, 240);
 	}
 	time[title] {
 		text-decoration-style: dashed;
@@ -14,38 +22,57 @@
 		text-decoration-color: #c6c6c6;
 		cursor: help;
 	}
-	th {
+	table-grid {
+		counter-reset: tr 0;
+		display: grid;
+		gap: 2px 2px;
+		margin-bottom: 1em;
+	}
+	table-head {
 		font-family: sans-serif;
 		background-color: #777;
 		font-size: 12px;
+		padding: 0px 3px;
 		color: white;
-		font-weight: normal;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
 	}
-	tr:nth-child(odd) {
-		background-color: #eee;
-		}
-	tr:nth-child(even) {
+	table-cell {
+		background-color: #eeeeee;
+		padding: 0px 3px;
+		white-space: nowrap;
+	}
+	#infotexts table-cell {
+		white-space: normal;
+	}
+	.even {
 		background-color: #f9f9f9;
 	}
-	tr:not(:first-of-type):before {
+	.first {
+		text-align: right;
+	}
+	.first:before {
 		content: counter(tr);
 		counter-increment: tr;
 		font-size: 60%;
+		margin-right: 6px;
 	}
-	tr:first-of-type{
-		background-color: #777;
+	#stops table-grid {
+		grid-template-columns: repeat(var(--stops-column-count), fit-content(100%));
 	}
-	tr:first-of-type:before {
-		content: "";
+	#departures table-grid {
+		grid-template-columns: repeat(var(--departures-column-count), fit-content(100%));
 	}
-	table {
-		counter-reset: tr 0;
-	}
-	td {
-		white-space: nowrap;
+	#infotexts table-grid {
+		grid-template-columns: repeat(var(--infotexts-column-count), fit-content(100%));
 	}
 	label {
 		white-space: nowrap;
+	}
+	select {
+		vertical-align: top;
 	}
 	.help > span {
 		background-color: #fff899;
@@ -72,15 +99,72 @@
 	}
 	#stops, #departures, #infotexts {
 		width: 100%;
+		overflow-x: auto;
 	}
 	a:visited {
 		color: LinkText;
+	}
+	#stops.simple table-grid > :not(.platform_code, .stop_id, .stop_name, .wheelchair_boarding) {
+		display: none;
+	}
+	#stops.simple table-grid {
+		grid-template-columns: repeat(4, fit-content(100%));
+	}
+	#departures.simple table-grid > :not(.delay_minutes, .delay_seconds, .departure_timestamp_scheduled, .departure_timestamp_minutes, .last_stop_name, .route_short_name, .stop_platform_code, .trip_headsign, .trip_is_wheelchair_accessible, .trip_is_air_conditioned) {
+		display: none;
+	}
+	#departures.simple table-grid {
+		grid-template-columns: repeat(10, fit-content(100%));
+	}
+	@media (prefers-color-scheme: dark) {
+		body, .help > span, #output, table-cell {
+			color: white;
+		}
+		body.api {
+			background-color: #272427;
+		}
+		body.rabin {
+			background-color: #55105b;
+		}
+		input, select {
+			filter: invert(1);
+		}
+		.help > span {
+			background-color: #2d346e;
+		}
+		input[type=submit]{
+			background-color: #005fe0;
+		}
+		#output {
+			background-color: #535d62;
+		}
+		table-cell {
+			background-color: #363636
+		}
+		.even {
+			background-color: #212121;
+		}
+	}
+	@media (max-width: 800px) {
+		#departures table-head {
+			writing-mode: sideways-lr;
+			max-height: 5em;
+			padding: 2px 0;
+		}
+		#form {
+			column-width: 240px;
+			column-count: auto;
+		}
+		#form > label{
+			display: block;
+		}
 	}
 	</style>
 
 	</head>
 	<body>
 	<div class="help"><span>Kódy zastávek oddělené <em>středníkem</em>, lze použít kódy GTFS, kódy ASW (stanoviště volitelně oddělené podtržítkem 123_1), kódy CIS s prefixem C (C12345) a přesná jména (Českomoravská).</span></div>
+	<section id="form">
 	<label>Zdroj: <select id="source">
 		<option value="api">Produkční</option>
 		<option value="rabin">Testovací</option>
@@ -112,12 +196,14 @@
 		<option value="canceled">zrušené</option>
 	</select></label>
 	<label>Mode: <select id="mode">
-	<option value="departures" selected>departures</option>
+	<option value="departures">departures</option>
 	<option value="arrivals">arrivals</option>
 	<option value="mixed">mixed</option>
 	</select></label>
 	<label>Čas dotazu: <input type="datetime-local" id="timestamp"></label>
 	<input type="submit" id="submit">
+	<label><input type="checkbox" id="simple">Zjednodušené zobrazení</label>
+</section>
 	<input type="search" id="direct" placeholder="Připravený řetězec dotazu">
 	<div id="output"></div>
 	<div id="stops"></div>
@@ -125,6 +211,8 @@
 	<div id="infotexts"></div>
 	<div id="time"></div>
 	<script src="key.js"></script>
+	<!-- Moment.js for processing time strings -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 	<script>
 		const stopDestination = document.getElementById("stops");
 		const departuresDestination = document.getElementById("departures");
@@ -134,15 +222,34 @@
 
 		/* Change background color on source change */
 		function changeColor(){
-			const colorTable = {
-				"rabin" : "rgb(237, 226, 240)",
-				"api" : "white"
-			}
-			document.getElementsByTagName("body")[0].style.backgroundColor = colorTable[source.value];
+			document.getElementsByTagName("body")[0].classList.remove("rabin","api");
+			document.getElementsByTagName("body")[0].classList.add(source.value);
 		}
 		const source = document.getElementById('source');
 		source.addEventListener("change", changeColor);
 		changeColor();
+
+		/* Toggle simple mode */
+		document.querySelector("#simple").checked = window.localStorage.getItem("simple") === "true" ? true : false;
+		toggleSimple();
+
+		document.querySelector("#simple").addEventListener("change", toggleSimple)
+
+		// Handle toggling simple mode
+		function toggleSimple(){
+			if (document.querySelector("#simple").checked) {
+				document.getElementById("stops").classList.add("simple");
+				document.getElementById("departures").classList.add("simple");
+				window.localStorage.setItem("simple", true);
+				simple.checked = true;
+			}
+			else {
+				document.getElementById("stops").classList.remove("simple");
+				document.getElementById("departures").classList.remove("simple");
+				window.localStorage.setItem("simple", false);
+				simple.checked = false;
+			}
+		}
 
 		let query;
 		prepareUri();
@@ -160,32 +267,20 @@
 			time.innerHTML = "Odpověď za " + json.time + " ms";
 
 			// For every chapten in JSON, print contents to table
-			stops = json.stops;
-			let data = [];
-			for (let value in stops){
-				data.push(flatten(stops[value]));
+			chapters = Object.keys(json);
+			for (chapter of chapters) {
+				chapterData = json[chapter];
+				let data = [];
+				for (let value in chapterData){
+					data.push(flatten(chapterData[value]));
+				}
+				if (typeof data === "undefined" || data.length === 0) return;
+				let keys = Object.keys(data[0]);
+				[tableContent,columnCount] = buildCssGridTable(data);
+				document.getElementById(chapter).innerHTML = tableContent.outerHTML;
+				document.documentElement.style.setProperty(`--${chapter}-column-count`, columnCount);
 			}
-			if (typeof data === "undefined" || data.length === 0) return;
-			let keys = Object.keys(data[0]);
-			stopDestination.innerHTML = buildHtmlTable(data).outerHTML;
-
-			departures = json.departures;
-			data = [];
-			for (let value in departures){
-				data.push(flatten(departures[value]));
-			}
-			if (typeof data === "undefined") return;
-			departuresDestination.innerHTML = buildHtmlTable(data).outerHTML;
-
-			infotexts = json.infotexts;
-			data = [];
-			for (let value in infotexts){
-				data.push(flatten(infotexts[value]));
-			}
-			if (typeof data === "undefined") return;
-			infotextDestination.innerHTML = buildHtmlTable(data).outerHTML;
 		}
-
 		// Flattens a JSON object
 		function flatten (obj, prefix, current) {
 			prefix = prefix || []
@@ -203,51 +298,61 @@
 			return current;
 		}
 
-		var _table_ = document.createElement('table'),
-		_tr_ = document.createElement('tr'),
-		_th_ = document.createElement('th'),
-		_td_ = document.createElement('td');
+		var _table_ = document.createElement('table-grid'),
+		_th_ = document.createElement('table-head');
+		_td_ = document.createElement('table-cell');
 
-		// Builds the HTML Table out of myList json data from Ivy restful service.
-		function buildHtmlTable(arr) {
+		// Build CSS grid tables
+		function buildCssGridTable(arr){
 			var table = _table_.cloneNode(false),
-				columns = addAllColumnHeaders(arr, table);
-			for (var i = 0, maxi = arr.length; i < maxi; ++i) {
-				var tr = _tr_.cloneNode(false);
-				for (var j = 0, maxj = columns.length; j < maxj; ++j) {
-					var td = _td_.cloneNode(false);
-					cellValue = arr[i][columns[j]];
+			columns = addAllColumnHeaders(arr, table);
+			for (const row in arr){
+				let counter = 0;
+				for (const cell in arr[row]) {
+					let newCell = _td_.cloneNode(false);
+					// Column id
+					newCell.classList.add(cell.replace(".","_"));
+					// Row coloring
+					if (row % 2 > 0) newCell.classList.add("even");
+					// Identify begining of row for counter
+					if (counter === 0) newCell.classList.add("first");
+					cellValue = arr[row][cell];
+					// Chceck for date
 					let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
 					if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
+					// Format nulls
 					if (cellValue === null) cellValue = "<i>null</i>";
-					if (columns[j] === "stop_id" && arr[i].stop_lat > 0 && arr[i].stop_lon > 0) {
-						cellValue = `<a href="https://mapa.pid.cz/?zoom=18&lon=${arr[i].stop_lon}&lat=${arr[i].stop_lat}" target="_blank">${arr[i].stop_id}</a>`;
+					// Print link to map
+					if (cell === "stop_lat" && arr[row].stop_lat > 0 && arr[row].stop_lon > 0) {
+						cellValue = `<a href="https://mapa.pid.cz?zoom=18&lon=${arr[row].stop_lon}&lat=${arr[row].stop_lat}" target="_blank">${arr[row].stop_lat}</a>`;
 					}
-					td.innerHTML = cellValue;
-					tr.appendChild(td);
+					if (cell === "stop_lon" && arr[row].stop_lat > 0 && arr[row].stop_lon > 0) {
+						cellValue = `<a href="https://mapy.cz/zakladni?x=${arr[row].stop_lon}&y=${arr[row].stop_lat}&z=19&base=ophoto" target="_blank">${arr[row].stop_lon}</a>`;
+					}
+					newCell.innerHTML = cellValue;
+					table.appendChild(newCell);
+					counter++;
 				}
-				table.appendChild(tr);
 			}
-			return table;
+			return [table,columns.length];
 		}
 
 		// Adds a header row to the table and returns the set of columns.
 		// Need to do union of keys from all records as some records may not contain
 		// all records
 		function addAllColumnHeaders(arr, table) {
-			var columnSet = [],
-				tr = _tr_.cloneNode(false);
+			var columnSet = [];
 			for (var i = 0, l = arr.length; i < l; i++) {
 				for (var key in arr[i]) {
 					if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
 						columnSet.push(key);
 						var th = _th_.cloneNode(false);
+						th.classList.add(key.replace(".","_"));
 						th.appendChild(document.createTextNode(key.replace(/([._])/g,"$1​"))); // Achtung, Zero width space!
-						tr.appendChild(th);
+						table.appendChild(th);
 					}
 				}
 			}
-			table.appendChild(tr);
 			return columnSet;
 		}
 
@@ -267,6 +372,7 @@
 			let skip = document.getElementById("skip").selectedOptions;
 			const timestamp = document.getElementById("timestamp").value;
 			const submit = document.getElementById("submit");
+			const simple = document.getElementById("simple").checked;
 			const direct = document.getElementById("direct");
 			if (direct.value.length > 0 && direct.value !== query) {
 				query = direct.value;
@@ -337,7 +443,7 @@
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 			request.setRequestHeader('x-access-token', (source === "api") ? KEY : RKEY);
 			request.onreadystatechange = function () {
-				if (this.readyState === 4) {
+				if (this.readyState === 4 && this.status === 200) {
 					// Timing the query
 					request.stop = moment.now();
 					this.time = request.stop - request.start;
@@ -370,7 +476,5 @@
 			send();
 		});
 	</script>
-<!-- Moment.js for processing time strings -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 </body>
 </html>
