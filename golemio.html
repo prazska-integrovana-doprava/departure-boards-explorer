@@ -274,7 +274,7 @@
 				for (let value in chapterData){
 					data.push(flatten(chapterData[value]));
 				}
-				if (typeof data === "undefined" || data.length === 0) return;
+				if (typeof data === "undefined" || data.length === 0) continue;
 				let keys = Object.keys(data[0]);
 				[tableContent,columnCount] = buildCssGridTable(data);
 				document.getElementById(chapter).innerHTML = tableContent.outerHTML;
