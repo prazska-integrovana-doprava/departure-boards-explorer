@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Prohlížeč tabel Lítačky</title>
+	<style>
+		:root {
+			--departures-column-count: 0;
+		}
+
+		body.api {
+			background-color: white;
+		}
+
+		body.rabin {
+			background-color: rgb(237, 226, 240);
+		}
+
+		time[title] {
+			text-decoration-style: dashed;
+			text-decoration-line: underline;
+			text-decoration-color: #c6c6c6;
+			cursor: help;
+		}
+
+		table-grid {
+			counter-reset: tr 0;
+			display: grid;
+			gap: 2px 2px;
+			margin-bottom: 1em;
+		}
+
+		table-head {
+			font-family: sans-serif;
+			background-color: #777;
+			font-size: 12px;
+			padding: 0px 3px;
+			color: white;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+		}
+
+		table-cell {
+			background-color: #eeeeee;
+			padding: 0px 3px;
+			white-space: nowrap;
+		}
+
+		.even {
+			background-color: #f9f9f9;
+		}
+
+		.first {
+			text-align: right;
+		}
+
+		.first:before {
+			content: counter(tr);
+			counter-increment: tr;
+			font-size: 60%;
+			margin-right: 6px;
+		}
+
+		table-grid {
+			grid-template-columns: repeat(var(--column-count), fit-content(100%));
+		}
+
+		label {
+			white-space: nowrap;
+		}
+
+		select {
+			vertical-align: top;
+		}
+
+		.help>span {
+			background-color: #fff899;
+			display: inline-block;
+			font-size: smaller;
+		}
+
+		.help {
+			padding: 2px;
+		}
+
+		#output {
+			font-family: monospace;
+			background-color: #d8f2ff;
+			margin: 3px 0px;
+			padding: 2px 1px;
+		}
+
+		#time {
+			margin-top: 3px;
+			font-size: smaller;
+		}
+
+		#results {
+			width: 100%;
+			overflow-x: auto;
+		}
+
+		a:visited {
+			color: LinkText;
+		}
+
+		#results.simple table-grid> :not(.departure_timestamp_predicted, .departure_minutes, .route_short_name, .stop_id, .stop_platform_code, .route_short_name, .trip_headsign, .vehicle_is_wheelchair_accessible, .vehicle_is_air_conditioned) {
+			display: none;
+		}
+
+		#results.simple table-grid {
+			grid-template-columns: repeat(8, fit-content(100%));
+		}
+
+		@media (prefers-color-scheme: dark) {
+
+			body,
+			.help>span,
+			#output,
+			table-cell {
+				color: white;
+			}
+
+			body.api {
+				background-color: #272427;
+			}
+
+			body.rabin {
+				background-color: #55105b;
+			}
+
+			input,
+			select {
+				filter: invert(1);
+			}
+
+			.help>span {
+				background-color: #2d346e;
+			}
+
+			input[type=submit] {
+				background-color: #005fe0;
+			}
+
+			#output {
+				background-color: #535d62;
+			}
+
+			table-cell {
+				background-color: #363636
+			}
+
+			.even {
+				background-color: #212121;
+			}
+		}
+
+		@media (max-width: 800px) {
+			#departures table-head {
+				writing-mode: sideways-lr;
+				max-height: 5em;
+				padding: 2px 0;
+			}
+
+			#form {
+				column-width: 240px;
+				column-count: auto;
+			}
+
+			#form>label {
+				display: block;
+			}
+		}
+	</style>
+
+</head>
+
+<body>
+	<div class="help"><span>Kódy GTFS oddělené <em>čárkou</em>, skupiny <em>středníkem</em>.</span></div>
+	<section id="form">
+		<label>Zdroj: <select id="source">
+				<option value="api">Produkční</option>
+				<option value="rabin">Testovací</option>
+			</select></label>
+		<label>Zastávky: <input type="text" id="input"></label>
+		<label>Počet hodnot: <input type="number" id="limit" size="3"></label>
+		<label>Linky: <input type="text" value="" id="route" size="15" min="-1" max="50"></label>
+		<label>Čas po: <input type="number" value="60" id="after" size="3"></label>
+		<input type="submit" id="submit">
+		<label><input type="checkbox" id="simple">Zjednodušené zobrazení</label>
+	</section>
+	<div id="output"></div>
+	<div id="results"></div>
+	<div id="time"></div>
+	<!-- Moment.js for processing time strings -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+	<script>
+		const resultsTarget = document.getElementById("results");
+		const time = document.getElementById("time");
+		const form = document.querySelectorAll('input');
+
+		/* Change background color on source change */
+		function changeColor() {
+			document.getElementsByTagName("body")[0].classList.remove("rabin", "api");
+			document.getElementsByTagName("body")[0].classList.add(source.value);
+		}
+		const source = document.getElementById('source');
+		source.addEventListener("change", changeColor);
+		changeColor();
+
+		/* Toggle simple mode */
+		document.querySelector("#simple").checked = window.localStorage.getItem("simple") === "true" ? true : false;
+		toggleSimple();
+
+		document.querySelector("#simple").addEventListener("change", toggleSimple)
+
+		// Handle toggling simple mode
+		function toggleSimple() {
+			if (document.querySelector("#simple").checked) {
+				document.getElementById("results").classList.add("simple");
+				window.localStorage.setItem("simple", true);
+				simple.checked = true;
+			}
+			else {
+				document.getElementById("results").classList.remove("simple");
+				window.localStorage.setItem("simple", false);
+				simple.checked = false;
+			}
+		}
+
+		let query;
+		prepareUri();
+
+		/* Build tables from received JSON */
+		function process(json) {
+
+			// Handle no departures case
+			if (json === "[]") {
+				content.innerHTML = "";
+				return;
+			}
+
+			// Print processing time
+			time.innerHTML = "Odpověď za " + json.time + " ms";
+
+			// For every chapter in JSON, print contents to table
+			chapters = Object.keys(json);
+			const target = document.getElementById("results");
+			for (chapter of chapters) {
+				chapterData = json[chapter];
+				let data = [];
+				for (let value in chapterData) {
+					data.push(flatten(chapterData[value]));
+				}
+				if (typeof data === "undefined" || data.length === 0) continue;
+				let keys = Object.keys(data[0]);
+				[tableContent, columnCount] = buildCssGridTable(data);
+				tableContent.style.setProperty(`--column-count`, columnCount);
+				target.appendChild(tableContent);
+			}
+		}
+		// Flattens a JSON object
+		function flatten(obj, prefix, current) {
+			prefix = prefix || []
+			current = current || {}
+
+			// Remember kids, null is also an object!
+			if (typeof (obj) === 'object' && obj !== null) {
+				Object.keys(obj).forEach(key => {
+					this.flatten(obj[key], prefix.concat(key), current)
+				})
+			} else {
+				current[prefix.join('.')] = obj
+			}
+
+			return current;
+		}
+
+			var _table_ = document.createElement('table-grid'),
+				_th_ = document.createElement('table-head'),
+				_td_ = document.createElement('table-cell');
+
+		// Build CSS grid tables
+		function buildCssGridTable(arr) {
+			var table = _table_.cloneNode(false),
+				columns = addAllColumnHeaders(arr, table);
+			for (const row in arr) {
+				let counter = 0;
+				for (const cell in arr[row]) {
+					let newCell = _td_.cloneNode(false);
+					// Column id
+					newCell.classList.add(cell.replace(".", "_"));
+					// Row coloring
+					if (row % 2 > 0) newCell.classList.add("even");
+					// Identify begining of row for counter
+					if (counter === 0) newCell.classList.add("first");
+					cellValue = arr[row][cell];
+					// Check for date
+					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ssZZ", true);
+					if (date.isValid()) { cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>` }
+					// Format nulls
+					if (cellValue === null) cellValue = "<i>null</i>";
+					newCell.innerHTML = cellValue;
+					table.appendChild(newCell);
+					counter++;
+				}
+			}
+			return [table, columns.length];
+		}
+
+		// Adds a header row to the table and returns the set of columns.
+		// Need to do union of keys from all records as some records may not contain
+		// all records
+		function addAllColumnHeaders(arr, table) {
+			var columnSet = [];
+			for (var i = 0, l = arr.length; i < l; i++) {
+				for (var key in arr[i]) {
+					if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+						columnSet.push(key);
+						var th = _th_.cloneNode(false);
+						th.classList.add(key.replace(".", "_"));
+						th.appendChild(document.createTextNode(key.replace(/([._])/g, "$1​"))); // Achtung, Zero width space!
+						table.appendChild(th);
+					}
+				}
+			}
+			return columnSet;
+		}
+
+		/* Collect all values from forms and prepare a query string */
+		function prepareUri() {
+			const input = document.getElementById("input").value;
+			const limit = document.getElementById("limit").value;
+			const routes = document.getElementById("route").value;
+			const after = document.getElementById("after").value;
+			const submit = document.getElementById("submit");
+			const simple = document.getElementById("simple").checked;
+
+			let parameters = new Array;
+
+			// Input is processed below
+			parameters.push(limit ? "limit=" + limit : "");
+			parameters.push(after ? "minutesAfter=" + after : "");
+
+			if (routes.length > 0) {
+				for (route of routes.split(",")) {
+					parameters.push("routeShortNames=" + route.trim());
+				}
+			}
+			// Process lists of stops
+			// Masks used to detect correct station ID
+			const gtfs = new RegExp(/^U\d+Z\d+P?$/, "i");
+
+			// Sort the IDs accordingly
+			let array = input.split(";");
+			let key = 0;
+			array.forEach(function (value) {
+				queryArray = {};
+				queryArray[key] = [];
+				let innerArray = value.split(",");
+				innerArray.forEach(function (value) {
+					let element = value.trim();
+					if (gtfs.test(element)) {
+						queryArray[key].push(element);
+					}
+				})
+				parameters.push("stopIds[]=" + JSON.stringify(queryArray));
+				key++;
+			})
+			// Print the query string on screen
+			query = parameters.filter(Boolean).join("&");
+			output.innerHTML = `${source.value}: ${query}`;
+		}
+
+		// Send repquest
+		function send() {
+			prepareUri();
+
+			// Clear any current tables
+			document.getElementById("results").replaceChildren();
+
+			let request = new XMLHttpRequest();
+			const source = document.getElementById("source").value;
+			request.start = moment.now(); // Start timer
+			url = `https://${source}.golemio.cz/v2/public/departureboards/?${query}`;
+			request.open('GET', url);
+			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+			request.onreadystatechange = function () {
+				if (this.readyState === 4 && this.status === 200) {
+					// Timing the query
+					request.stop = moment.now();
+					this.time = request.stop - request.start;
+					// Add the result time to JSON response
+					let json = JSON.parse(this.response);
+					json.time = request.stop - request.start;
+					process(json);
+				}
+				else if (this.status != 200) {
+					resultsTarget.innerHTML = "HTTP " + this.status;
+					return;
+				}
+			}
+			request.send();
+		}
+
+		// Update the query string when changing any form value
+		form.forEach(function (elem) {
+			elem.addEventListener("change", function () {
+				prepareUri();
+			});
+			// Send from on pressing enter
+			elem.addEventListener("keydown", function () {
+				if (!e) { var e = window.event }
+				if (e.keyCode === 13) send();
+			});
+			// Codes are always uppercase
+			elem.addEventListener("input", function () {
+				inputField = document.getElementById("input");
+				inputField.value = inputField.value.toUpperCase();
+			});
+		});
+
+		submit.addEventListener("click", function () {
+			send();
+		});
+	</script>
+</body>
+
+</html>
