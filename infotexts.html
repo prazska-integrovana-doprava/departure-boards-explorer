@@ -31,7 +31,6 @@
 							document.getElementById("time").textContent = "Odpověď za " + processTime + " ms";
 							// Printing the data
 							let json = JSON.parse(this.response);
-							console.log(flatten(json));
 							let toPrint = [];
 							for (let value in json){
 								toPrint.push(flatten(json[value]));
