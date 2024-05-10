@@ -1,0 +1,258 @@
+/* Golemio */
+:root {
+    --stops-column-count: 0;
+    --departures-column-count: 0;
+    --infotexts-column-count: 0;
+}
+
+body.api {
+    background-color: white;
+}
+
+body.rabin {
+    background-color: rgb(237, 226, 240);
+}
+
+menu {
+    padding: 0px;
+}
+
+menu > li {
+    display: inline-block;
+}
+
+time[title] {
+    text-decoration-style: dashed;
+    text-decoration-line: underline;
+    text-decoration-color: #c6c6c6;
+    cursor: help;
+}
+
+table-grid {
+    counter-reset: tr 0;
+    display: grid;
+    gap: 2px 2px;
+    margin-bottom: 1em;
+}
+
+table-head {
+    font-family: sans-serif;
+    background-color: #777;
+    font-size: 12px;
+    padding: 0px 3px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+table-cell {
+    background-color: #eeeeee;
+    padding: 0px 3px;
+    white-space: nowrap;
+}
+
+#infotexts table-cell {
+    white-space: normal;
+}
+
+.even {
+    background-color: #f9f9f9;
+}
+
+.first {
+    text-align: right;
+}
+
+.first:before {
+    content: counter(tr);
+    counter-increment: tr;
+    font-size: 60%;
+    margin-right: 6px;
+}
+
+#stops table-grid {
+    grid-template-columns: repeat(var(--stops-column-count), fit-content(100%));
+}
+
+#departures table-grid {
+    grid-template-columns: repeat(var(--departures-column-count), fit-content(100%));
+}
+
+#infotexts table-grid {
+    grid-template-columns: repeat(var(--infotexts-column-count), fit-content(100%));
+}
+
+#results table-grid {
+    grid-template-columns: repeat(var(--column-count), fit-content(100%));
+}
+
+label {
+    white-space: nowrap;
+}
+
+select {
+    vertical-align: top;
+}
+
+.help > span {
+    background-color: #fff899;
+    display: inline-block;
+    font-size: smaller;
+}
+
+.help {
+    padding: 2px;
+}
+
+#direct {
+    font-family: monospace;
+    display: block;
+    width: 100%;
+}
+
+#output {
+    font-family: monospace;
+    background-color: #d8f2ff;
+    margin: 3px 0px;
+    padding: 2px 1px;
+}
+
+#time {
+    margin-top: 3px;
+    font-size: smaller;
+}
+
+#stops,
+#departures,
+#infotexts,
+#results {
+    width: 100%;
+    overflow-x: auto;
+}
+
+a:visited {
+    color: LinkText;
+}
+
+#stops.simple table-grid > :not(.platform_code, .stop_id, .stop_name, .wheelchair_boarding),
+#results.simple table-grid > :not(.departure_timestamp_predicted, .departure_minutes, .route_short_name, .stop_id, .stop_platform_code, .route_short_name, .trip_headsign, .vehicle_is_wheelchair_accessible, .vehicle_is_air_conditioned) {
+    display: none;
+}
+
+#stops.simple table-grid {
+    grid-template-columns: repeat(4, fit-content(100%));
+}
+
+#departures.simple table-grid > :not(.delay_minutes, .delay_seconds, .departure_timestamp_scheduled, .departure_timestamp_minutes, .last_stop_name, .route_short_name, .stop_platform_code, .trip_headsign, .trip_is_wheelchair_accessible, .trip_is_air_conditioned) {
+    display: none;
+}
+
+#departures.simple table-grid {
+    grid-template-columns: repeat(10, fit-content(100%));
+}
+
+#results.simple table-grid {
+    grid-template-columns: repeat(8, fit-content(100%));
+}
+
+/* Infotexts */
+th {
+    font-family: sans-serif;
+    background-color: #777;
+    font-size: 12px;
+    color: white;
+    font-weight: normal;
+}
+
+tr:nth-child(odd) {
+    background-color: #eee;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+td {
+    white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+
+    body,
+    .help > span,
+    #output,
+    table-cell {
+        color: white;
+    }
+
+    body.api {
+        background-color: #272427;
+    }
+
+    body.rabin {
+        background-color: #55105b;
+    }
+
+    input,
+    select {
+        filter: invert(1);
+    }
+
+    .help > span {
+        background-color: #2d346e;
+    }
+
+    input[type=submit] {
+        background-color: #005fe0;
+    }
+
+    #output {
+        background-color: #535d62;
+    }
+
+    table-cell {
+        background-color: #363636
+    }
+
+    .even {
+        background-color: #212121;
+    }
+
+    /* Infotexts */
+    th {
+        color: black;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #363636;
+    }
+
+    tr:nth-child(even) {
+        background-color: #212121;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+
+
+}
+
+@media (max-width: 800px) {
+    #departures table-head {
+        writing-mode: sideways-lr;
+        max-height: 5em;
+        padding: 2px 0;
+    }
+
+    #form {
+        column-width: 240px;
+        column-count: auto;
+    }
+
+    #form > label {
+        display: block;
+    }
+}
