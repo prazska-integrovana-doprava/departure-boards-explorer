@@ -85,7 +85,7 @@ table-cell {
 }
 
 #results table-grid {
-    grid-template-columns: repeat(var(--column-count), fit-content(100%));
+    grid-template-columns: repeat(var(--public-column-count), fit-content(100%));
 }
 
 label {
