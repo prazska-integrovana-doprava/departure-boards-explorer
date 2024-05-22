@@ -93,7 +93,6 @@
 				let keys = Object.keys(data[0]);
 				[tableContent, columnCount] = buildCssGridTable(data);
 				tableContent.style.setProperty(`--public-column-count`, columnCount);
-				console.log(tableContent.style);
 				target.appendChild(tableContent);
 			}
 		}
