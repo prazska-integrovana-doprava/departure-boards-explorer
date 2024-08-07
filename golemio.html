@@ -19,11 +19,11 @@
 		<option value="rabin">Testovací</option>
 	</select></label>
 	<label>Zastávky: <input type="text" id="input"></label>
-	<label>Čas před: <input type="number" value="" id="before" size="3"></label>
-	<label>Čas po: <input type="number" value="60" id="after" size="3"></label>
-	<label>Počet hodnot: <input type="number" id="limit" size="3"></label>
-	<label>Ofset: <input type="number" value="" id="offset" size="2"></label>
-	<label>Total: <input type="number" value="" id="total" size="2"></label>
+	<label>Čas před: <input type="number" value="" id="before" size="3" min="-4320" max="30"></label>
+	<label>Čas po: <input type="number" value="60" id="after" size="3" min="-4350" max="4320"></label>
+	<label>Počet hodnot: <input type="number" id="limit" size="3" min="1" max="1000"></label>
+	<label>Ofset: <input type="number" value="" id="offset" size="2" min="0"></label>
+	<label>Total: <input type="number" value="" id="total" size="2" min="1" max="1000"></label>
 	<label>Filtr: <select id="filter">
 		<option value="none">none</option>
 		<option value="routeOnce">route once</option>
