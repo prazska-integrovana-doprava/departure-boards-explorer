@@ -1,165 +1,170 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8" />
+
+<head>
+	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="stylesheet" type="text/css" href="style.css">
-		<title>Golemio infotexts explorer</title>
-	</head>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<title>Golemio infotexts explorer</title>
+</head>
+
 <body>
-		<menu>
-			<li><a href="golemio.html">Departure boards</a></li>
-			<li><a href="public.html">Public boards</a></li>
-			<li>Infotexts</li>
-		</menu>
+	<menu>
+		<li><a href="golemio.html">Departure boards</a></li>
+		<li><a href="public.html">Public boards</a></li>
+		<li>Infotexts</li>
+	</menu>
 	<section id="form">
 		<label>Zdroj:
 			<select id="source">
 				<option value="production" selected>Produkční</option>
 				<option value="test">Testovací</option>
-			</select></label>
+			</select>
+		</label>
 	</section>
-		<div id="results"></div>
-		<div id="time"></div>
-		<script src="key.js"></script>
-		<!-- Moment.js for processing time strings -->
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
-		<script>
-			const sourceURL = {
-				production: "https://api.golemio.cz/v2/pid/infotexts",
-				test: "https://rabin.golemio.cz/v3/pid/infotexts"
-			}
+	<div id="results"></div>
+	<div id="time"></div>
+	<script src="key.js"></script>
+	<!-- Moment.js for processing time strings -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+	<script>
+		const sourceURL = {
+			production: "https://api.golemio.cz/v2/pid/infotexts",
+			test: "https://rabin.golemio.cz/v3/pid/infotexts"
+		}
 
-			const key = {
-				production: KEY,
-				test: RKEY
-			}
+		const key = {
+			production: KEY,
+			test: RKEY
+		}
 
-			const style = {
-				production: "api",
-				test: "rabin"
-			}
+		const style = {
+			production: "api",
+			test: "rabin"
+		}
 
-			// Send a request
-			function getData(target) {
-					let request = new XMLHttpRequest();
-					request.start = moment.now(); // Start timer
-				request.open('GET', sourceURL[target]);
-					request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-				request.setRequestHeader('x-access-token', key[target]);
+		// Send a request
+		function getData(target) {
+			let request = new XMLHttpRequest();
+			request.start = moment.now(); // Start timer
+			request.open('GET', sourceURL[target]);
+			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+			request.setRequestHeader('x-access-token', key[target]);
 
-					request.onreadystatechange = function () {
-						if (this.readyState === 4) {
-							// Timing the query
-							request.stop = moment.now();
-							const processTime = request.stop - request.start;
-							document.getElementById("time").textContent = "Odpověď za " + processTime + " ms";
-						if (this.response.length === 0) {
-							document.getElementById("results").innerText = "Prázdná odpověď";
-							return;
-						} 
-							// Printing the data
-							let json = JSON.parse(this.response);
-							let toPrint = [];
-							for (let value in json){
-								toPrint.push(flatten(json[value]));
-							}
-						document.getElementById("results").replaceChildren(printTable(toPrint));
-						}
-						else if (this.status != 200) {
-							results.textContent = "HTTP " + this.status;
-							return;
-						}
+			request.onreadystatechange = function () {
+				if (this.readyState === 4) {
+					// Timing the query
+					request.stop = moment.now();
+					const processTime = request.stop - request.start;
+					document.getElementById("time").textContent = "Odpověď za " + processTime + " ms";
+					if (this.response.length === 0) {
+						document.getElementById("results").innerText = "Prázdná odpověď";
+						return;
 					}
-					request.send();
-			}
-					/* Build tables from received JSON */
-					function printTable(json){
-						// Handle no departures case
-						if (json.length === 0){
-							message = document.createElement('span');
-							message.innerHTML = "Nejsou aktivní žádné infotexty.";
-							return message;
-						}
-						return buildHtmlTable(json);
+					// Printing the data
+					let json = JSON.parse(this.response);
+					let toPrint = [];
+					for (let value in json) {
+						toPrint.push(flatten(json[value]));
 					}
-				// Flattens a JSON object
-				function flatten (obj, prefix, current) {
-					prefix = prefix || []
-					current = current || {}
-
-					// Remember kids, null is also an object!
-					if (typeof (obj) === 'object' && obj !== null) {
-						Object.keys(obj).forEach(key => {
-							this.flatten(obj[key], prefix.concat(key), current)
-						})
-					} else {
-						current[prefix.join('.')] = obj
-					}
-					return current;
+					document.getElementById("results").replaceChildren(printTable(toPrint));
 				}
-
-			// Builds the HTML Table out of myList json data from Ivy restful service.
-					var _table_ = document.createElement('table'),
-					_tr_ = document.createElement('tr'),
-					_th_ = document.createElement('th'),
-					_td_ = document.createElement('td');
-
-					function buildHtmlTable(arr) {
-						var table = _table_.cloneNode(false),
-							columns = addAllColumnHeaders(arr, table);
-						for (var i = 0, maxi = arr.length; i < maxi; ++i) {
-							var tr = _tr_.cloneNode(false);
-							for (var j = 0, maxj = columns.length; j < maxj; ++j) {
-								var td = _td_.cloneNode(false);
-								cellValue = arr[i][columns[j]];
-								let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
-								if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
-								if (cellValue === null) cellValue = "<i>null</i>";
-								if (typeof cellValue === "object") {
-									cellValue.forEach((item, i) => {
-										cellValue = flatten(item);
-										td.append(cellValue);
-										console.log(cellValue);
-									});
-								}
-								td.innerHTML = cellValue;
-								tr.appendChild(td);
-							}
-							table.appendChild(tr);
-						}
-						return table;
-					}
-
-					// Adds a header row to the table and returns the set of columns.
-					// Need to do union of keys from all records as some records may not contain
-					// all records
-					function addAllColumnHeaders(arr, table) {
-						var columnSet = [],
-							tr = _tr_.cloneNode(false);
-						for (var i = 0, l = arr.length; i < l; i++) {
-							for (var key in arr[i]) {
-								if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
-									columnSet.push(key);
-									var th = _th_.cloneNode(false);
-									th.appendChild(document.createTextNode(key.replace(/([._])/g,"$1​"))); // Achtung, Zero width space!
-									tr.appendChild(th);
-								}
-							}
-						}
-						table.appendChild(tr);
-						return columnSet;
-					}
-			/* Change background color on source change */
-			function changeColor() {
-				document.getElementsByTagName("body")[0].className = "";
-				document.getElementsByTagName("body")[0].classList.add(style[source.value]);
-				getData(source.value);
+				else if (this.status != 200) {
+					results.textContent = "HTTP " + this.status;
+					return;
+				}
 			}
-			const source = document.getElementById('source');
-			source.addEventListener("change", changeColor);
-			changeColor();
-				getData(source.value);
-		</script>
-	</body>
+			request.send();
+		}
+
+		/* Build tables from received JSON */
+		function printTable(json) {
+			// Handle no departures case
+			if (json.length === 0) {
+				message = document.createElement('span');
+				message.innerHTML = "Nejsou aktivní žádné infotexty.";
+				return message;
+			}
+			return buildHtmlTable(json);
+		}
+
+		// Flattens a JSON object
+		function flatten(obj, prefix, current) {
+			prefix = prefix || []
+			current = current || {}
+
+			// Remember kids, null is also an object!
+			if (typeof (obj) === 'object' && obj !== null) {
+				Object.keys(obj).forEach(key => {
+					this.flatten(obj[key], prefix.concat(key), current)
+				})
+			} else {
+				current[prefix.join('.')] = obj
+			}
+			return current;
+		}
+
+		// Builds the HTML Table out of myList json data from Ivy restful service.
+		var _table_ = document.createElement('table'),
+			_tr_ = document.createElement('tr'),
+			_th_ = document.createElement('th'),
+			_td_ = document.createElement('td');
+
+		function buildHtmlTable(arr) {
+			var table = _table_.cloneNode(false),
+				columns = addAllColumnHeaders(arr, table);
+			for (var i = 0, maxi = arr.length; i < maxi; ++i) {
+				var tr = _tr_.cloneNode(false);
+				for (var j = 0, maxj = columns.length; j < maxj; ++j) {
+					var td = _td_.cloneNode(false);
+					cellValue = arr[i][columns[j]];
+					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ssZZ", true);
+					if (date.isValid()) { cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>` }
+					if (cellValue === null) cellValue = "<i>null</i>";
+					if (typeof cellValue === "object") {
+						cellValue.forEach((item, i) => {
+							cellValue = flatten(item);
+							td.append(cellValue);
+							console.log(cellValue);
+						});
+					}
+					td.innerHTML = cellValue;
+					tr.appendChild(td);
+				}
+				table.appendChild(tr);
+			}
+			return table;
+		}
+
+		// Adds a header row to the table and returns the set of columns.
+		// Need to do union of keys from all records as some records may not contain
+		// all records
+		function addAllColumnHeaders(arr, table) {
+			var columnSet = [],
+				tr = _tr_.cloneNode(false);
+			for (var i = 0, l = arr.length; i < l; i++) {
+				for (var key in arr[i]) {
+					if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+						columnSet.push(key);
+						var th = _th_.cloneNode(false);
+						th.appendChild(document.createTextNode(key.replace(/([._])/g, "$1​"))); // Achtung, Zero width space!
+						tr.appendChild(th);
+					}
+				}
+			}
+			table.appendChild(tr);
+			return columnSet;
+		}
+		/* Change background color on source change */
+		function changeColor() {
+			document.getElementsByTagName("body")[0].className = "";
+			document.getElementsByTagName("body")[0].classList.add(style[source.value]);
+			getData(source.value);
+		}
+		const source = document.getElementById('source');
+		source.addEventListener("change", changeColor);
+		changeColor();
+		getData(source.value);
+	</script>
+</body>
 </html>
