@@ -2,26 +2,51 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" type="text/css" href="style.css">
 		<title>Golemio infotexts explorer</title>
 	</head>
-	<body class="api">
+<body>
 		<menu>
 			<li><a href="golemio.html">Departure boards</a></li>
 			<li><a href="public.html">Public boards</a></li>
 			<li>Infotexts</li>
 		</menu>
+	<section id="form">
+		<label>Zdroj:
+			<select id="source">
+				<option value="production" selected>Produkční</option>
+				<option value="test">Testovací</option>
+			</select></label>
+	</section>
 		<div id="results"></div>
 		<div id="time"></div>
 		<script src="key.js"></script>
+		<!-- Moment.js for processing time strings -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 		<script>
-				window.onload = function() {
+			const sourceURL = {
+				production: "https://api.golemio.cz/v2/pid/infotexts",
+				test: "https://rabin.golemio.cz/v3/pid/infotexts"
+			}
+
+			const key = {
+				production: KEY,
+				test: RKEY
+			}
+
+			const style = {
+				production: "api",
+				test: "rabin"
+			}
+
+			// Send a request
+			function getData(target) {
 					let request = new XMLHttpRequest();
 					request.start = moment.now(); // Start timer
-					url = "https://api.golemio.cz/v2/pid/infotexts";
-					request.open('GET', url);
+				request.open('GET', sourceURL[target]);
 					request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-					request.setRequestHeader('x-access-token', KEY);
+				request.setRequestHeader('x-access-token', key[target]);
 
 					request.onreadystatechange = function () {
 						if (this.readyState === 4) {
@@ -29,13 +54,17 @@
 							request.stop = moment.now();
 							const processTime = request.stop - request.start;
 							document.getElementById("time").textContent = "Odpověď za " + processTime + " ms";
+						if (this.response.length === 0) {
+							document.getElementById("results").innerText = "Prázdná odpověď";
+							return;
+						} 
 							// Printing the data
 							let json = JSON.parse(this.response);
 							let toPrint = [];
 							for (let value in json){
 								toPrint.push(flatten(json[value]));
 							}
-							document.getElementById("results").appendChild(printTable(toPrint));
+						document.getElementById("results").replaceChildren(printTable(toPrint));
 						}
 						else if (this.status != 200) {
 							results.textContent = "HTTP " + this.status;
@@ -43,7 +72,7 @@
 						}
 					}
 					request.send();
-				};
+			}
 					/* Build tables from received JSON */
 					function printTable(json){
 						// Handle no departures case
@@ -70,12 +99,12 @@
 					return current;
 				}
 
+			// Builds the HTML Table out of myList json data from Ivy restful service.
 					var _table_ = document.createElement('table'),
 					_tr_ = document.createElement('tr'),
 					_th_ = document.createElement('th'),
 					_td_ = document.createElement('td');
 
-					// Builds the HTML Table out of myList json data from Ivy restful service.
 					function buildHtmlTable(arr) {
 						var table = _table_.cloneNode(false),
 							columns = addAllColumnHeaders(arr, table);
@@ -121,8 +150,16 @@
 						table.appendChild(tr);
 						return columnSet;
 					}
+			/* Change background color on source change */
+			function changeColor() {
+				document.getElementsByTagName("body")[0].className = "";
+				document.getElementsByTagName("body")[0].classList.add(style[source.value]);
+				getData(source.value);
+			}
+			const source = document.getElementById('source');
+			source.addEventListener("change", changeColor);
+			changeColor();
+				getData(source.value);
 		</script>
-		<!-- Moment.js for processing time strings -->
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 	</body>
 </html>
