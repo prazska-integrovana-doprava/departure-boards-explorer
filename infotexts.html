@@ -29,7 +29,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 	<script>
 		const sourceURL = {
-			production: "https://api.golemio.cz/v2/pid/infotexts",
+			production: "https://api.golemio.cz/v3/pid/infotexts",
 			test: "https://rabin.golemio.cz/v3/pid/infotexts"
 		}
 
@@ -120,6 +120,7 @@
 					cellValue = arr[i][columns[j]];
 					let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ssZZ", true);
 					if (date.isValid()) { cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>` }
+					if (cellValue && (cellValue.search(/^U\d+[0-9A-Z]+$/i) == 0)) { cellValue = `<a href="golemio.html?input=${cellValue}">${cellValue}</a>` }
 					if (cellValue === null) cellValue = "<i>null</i>";
 					if (typeof cellValue === "object") {
 						cellValue.forEach((item, i) => {

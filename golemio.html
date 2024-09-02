@@ -287,7 +287,7 @@
 			let request = new XMLHttpRequest();
 			const source = document.getElementById("source").value;
 			request.start = moment.now(); // Start timer
-			url = `https://${source}.golemio.cz/v2/pid/departureboards/?${query}`;
+			url = `https://${source}.golemio.cz/v2/pid/departureboards?${query}`;
 			request.open('GET', url);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 			request.setRequestHeader('x-access-token', (source === "api") ? KEY : RKEY);
@@ -323,6 +323,14 @@
 
 		submit.addEventListener("click",function(){
 			send();
+		});
+
+		document.addEventListener("DOMContentLoaded", function(argument) {
+			let params = new URL(document.location).searchParams;
+
+			if (params.get("input")) {
+				document.getElementById("input").value = params.get("input");
+			}
 		});
 	</script>
 </body>
