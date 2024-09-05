@@ -324,6 +324,14 @@
 		submit.addEventListener("click",function(){
 			send();
 		});
+
+		document.addEventListener("DOMContentLoaded", function(argument) {
+			let params = new URL(document.location).searchParams;
+
+			if (params.get("input")) {
+				document.getElementById("input").value = params.get("input");
+			}
+		});
 	</script>
 </body>
 </html>
