@@ -163,12 +163,14 @@
 					newCell.classList.add(cell.replace(".","_"));
 					// Row coloring
 					if (row % 2 > 0) newCell.classList.add("even");
-					// Identify begining of row for counter
+					// Identify beginning of row for counter
 					if (counter === 0) newCell.classList.add("first");
 					cellValue = arr[row][cell];
 					// Chceck for date
 					let date = moment(cellValue,"YYYY-MM-DDTHH:mm:ssZZ",true);
 					if (date.isValid()) {cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>`}
+					// Convert cell contatining GTFS ID into a link
+					if (/^U\d+.+$/i.test(cellValue)) {cellValue = `<a href="?input=${cellValue}">${cellValue}</a>`}
 					// Format nulls
 					if (cellValue === null) cellValue = "<i>null</i>";
 					// Print link to map
