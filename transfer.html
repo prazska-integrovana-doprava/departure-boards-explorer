@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Prohlížeč přestupních tabel do vozidel</title>
+</head>
+
+<body>
+    <menu>
+        <li><a href="golemio.html">Departure boards</a></li>
+        <li><a href="public.html">Public boards</a></li>
+        <li><a href="infotexts.html">Infotexts</a></li>
+        <li>Transfer boards</li>
+    </menu>
+    <div class="help"><span>Kódy CIS bez uvození písmenem <em>c</em></div>
+    <section id="form">
+        <label>Zdroj: <select id="source">
+                <option value="api">Produkční</option>
+                <option value="rabin">Testovací</option>
+            </select></label>
+        <label>Zastávky: <input type="number" value="" id="input" size="5" min="1" max="5499999"></label>
+        <label>Číslo vlaku: <input type="number" value="" id="trip" size="5" min="1" max="99999"></label>
+        <label>Čas dotazu: <input type="datetime-local" id="timestamp"></label>
+        <input type="submit" id="submit">
+    </section>
+    <div id="output"></div>
+    <div id="departures"></div>
+    <div id="infotexts"></div>
+    <div id="time"></div>
+    <script src="key.js"></script>
+    <!-- Moment.js for processing time strings -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+    <script>
+        const departuresDestination = document.getElementById("departures");
+        const infotextDestination = document.getElementById("infotexts");
+        const time = document.getElementById("time");
+        const form = document.querySelectorAll('input');
+        /* Change background color on source change */
+        function changeColor() {
+            document.getElementsByTagName("body")[0].classList.remove("rabin", "api");
+            document.getElementsByTagName("body")[0].classList.add(source.value);
+        }
+        const source = document.getElementById('source');
+        source.addEventListener("change", changeColor);
+        changeColor();
+
+        let query;
+        prepareUri();
+
+        /* Build tables from received JSON */
+        function process(json) {
+
+            // Handle no departures case
+            if (json === "[]") {
+                content.innerHTML = "";
+                return;
+            }
+
+            // Print processing time
+            time.innerHTML = `Vytvořeno ${moment().format("YYYY-MM-DD HH:mm:ss")} za ${json.time} ms.`;
+
+            // For every chapten in JSON, print contents to table
+            chapters = Object.keys(json);
+            for (chapter of chapters) {
+                chapterData = json[chapter];
+                let data = [];
+                for (let value in chapterData) {
+                    data.push(flatten(chapterData[value]));
+                }
+                if (typeof data === "undefined" || data.length === 0) continue;
+                let keys = Object.keys(data[0]);
+                [tableContent, columnCount] = buildCssGridTable(data);
+                document.getElementById(chapter).innerHTML = tableContent.outerHTML;
+                document.documentElement.style.setProperty(`--${chapter}-column-count`, columnCount);
+            }
+        }
+        // Flattens a JSON object
+        function flatten(obj, prefix, current) {
+            prefix = prefix || []
+            current = current || {}
+
+            // Remember kids, null is also an object!
+            if (typeof (obj) === 'object' && obj !== null) {
+                Object.keys(obj).forEach(key => {
+                    this.flatten(obj[key], prefix.concat(key), current)
+                })
+            } else {
+                current[prefix.join('.')] = obj
+            }
+
+            return current;
+        }
+
+        var _table_ = document.createElement('table-grid'),
+            _th_ = document.createElement('table-head'),
+            _td_ = document.createElement('table-cell');
+
+        // Build CSS grid tables
+        function buildCssGridTable(arr) {
+            var table = _table_.cloneNode(false),
+                columns = addAllColumnHeaders(arr, table);
+            for (const row in arr) {
+                let counter = 0;
+                for (const cell in arr[row]) {
+                    let newCell = _td_.cloneNode(false);
+                    // Column id
+                    newCell.classList.add(cell.replace(".", "_"));
+                    // Row coloring
+                    if (row % 2 > 0) newCell.classList.add("even");
+                    // Identify beginning of row for counter
+                    if (counter === 0) newCell.classList.add("first");
+                    cellValue = arr[row][cell];
+                    // Chceck for date
+                    let date = moment(cellValue, "YYYY-MM-DDTHH:mm:ssZZ", true);
+                    if (date.isValid()) { cellValue = `<time title="${cellValue}">${date.format("YYYY-MM-DD HH:mm:ss")}</time>` }
+                    // Convert cell containing GTFS ID into a link
+                    if (/^U\d+.+$/i.test(cellValue)) { cellValue = `<a href="?input=${cellValue}">${cellValue}</a>` }
+                    // Format nulls
+                    if (cellValue === null) cellValue = "<i>null</i>";
+                    // Print link to map
+                    if (cell === "stop_lat" && arr[row].stop_lat > 0 && arr[row].stop_lon > 0) {
+                        cellValue = `<a href="https://mapa.pid.cz?zoom=18&lon=${arr[row].stop_lon}&lat=${arr[row].stop_lat}" target="_blank">${arr[row].stop_lat}</a>`;
+                    }
+                    if (cell === "stop_lon" && arr[row].stop_lat > 0 && arr[row].stop_lon > 0) {
+                        cellValue = `<a href="https://mapy.cz/zakladni?x=${arr[row].stop_lon}&y=${arr[row].stop_lat}&z=19&base=ophoto" target="_blank">${arr[row].stop_lon}</a>`;
+                    }
+                    newCell.innerHTML = cellValue;
+                    table.appendChild(newCell);
+                    counter++;
+                }
+            }
+            return [table, columns.length];
+        }
+
+        // Adds a header row to the table and returns the set of columns.
+        // Need to do union of keys from all records as some records may not contain
+        // all records
+        function addAllColumnHeaders(arr, table) {
+            var columnSet = [];
+            for (var i = 0, l = arr.length; i < l; i++) {
+                for (var key in arr[i]) {
+                    if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+                        columnSet.push(key);
+                        var th = _th_.cloneNode(false);
+                        th.classList.add(key.replace(".", "_"));
+                        th.appendChild(document.createTextNode(key.replace(/([._])/g, "$1​"))); // Achtung, Zero width space!
+                        table.appendChild(th);
+                    }
+                }
+            }
+            return columnSet;
+        }
+
+        /* Collect all values from forms and prepare a query string */
+        function prepareUri() {
+            const input = document.getElementById("input").value;
+            const trip = document.getElementById("trip").value;
+            const timestamp = document.getElementById("timestamp").value;
+
+
+            // Input is processed below
+            let parameters = new Array;
+            parameters.push(input ? "cisId=" + input : "");
+            parameters.push(trip ? "tripNumber=" + trip : "");
+            parameters.push(timestamp ? "timeFrom=" + timestamp : "");
+
+            // Process Input
+            // Print the query string on screen
+            query = parameters.filter(Boolean).join("&");
+            output.innerHTML = `${source.value}: ${query}`;
+        }
+
+        // Send request
+        function send() {
+            prepareUri();
+
+            // Clear any current tables
+            [departuresDestination, infotextDestination].forEach(
+                function (element) {
+                    element.innerHTML = ""
+                });
+
+            let request = new XMLHttpRequest();
+            const source = document.getElementById("source").value;
+            request.start = moment.now(); // Start timer
+            url = `https://${source}.golemio.cz/v3/pid/transferboards?${query}`;
+            request.open('GET', url);
+            request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            request.setRequestHeader('x-access-token', (source === "api") ? KEY : RKEY);
+            request.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    // Timing the query
+                    request.stop = moment.now();
+                    this.time = request.stop - request.start;
+                    // Add the result time to JSON response
+                    let json = JSON.parse(this.response);
+                    json.time = request.stop - request.start;
+                    process(json);
+                }
+                else if (this.status != 200) {
+                    departuresDestination.innerHTML = "HTTP " + this.status;
+                    return;
+                }
+            }
+            request.send();
+        }
+
+        // Update the query string when changing any form value
+        form.forEach(function (elem) {
+            elem.addEventListener("change", function () {
+                prepareUri();
+            });
+            // Send from on pressing enter
+            elem.addEventListener("keydown", function () {
+                if (!e) { var e = window.event }
+                if (e.keyCode === 13) send();
+            });
+        });
+
+        submit.addEventListener("click", function () {
+            send();
+        });
+
+        document.addEventListener("DOMContentLoaded", function (argument) {
+            let params = new URL(document.location).searchParams;
+
+            if (params.get("input")) {
+                document.getElementById("input").value = params.get("input");
+            }
+        });
+    </script>
+</body>
+
+</html>
