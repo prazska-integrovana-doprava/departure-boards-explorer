@@ -30,6 +30,7 @@
 	<div id="output"></div>
 	<div id="results"></div>
 	<div id="time"></div>
+	<script src="key.js"></script>
 	<!-- Moment.js for processing time strings -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
 	<script>
@@ -223,6 +224,7 @@
 			url = `https://${source}.golemio.cz/v2/public/departureboards?${query}`;
 			request.open('GET', url);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+			request.setRequestHeader('x-access-token', (source === "api") ? KEY : RKEY);
 			request.onreadystatechange = function () {
 				if (this.readyState === 4 && this.status === 200) {
 					// Timing the query
