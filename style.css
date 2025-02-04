@@ -132,6 +132,10 @@ select {
     overflow-x: auto;
 }
 
+#graph {
+    min-height: 230px;
+}
+
 a:visited {
     color: LinkText;
 }
