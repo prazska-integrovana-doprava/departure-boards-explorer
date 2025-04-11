@@ -241,7 +241,9 @@ td {
         white-space: nowrap;
     }
 
-
+    a, a:visited {
+      color: #96ceff;
+    }
 }
 
 @media (max-width: 800px) {
