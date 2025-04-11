@@ -192,6 +192,7 @@
 				labels: [""]
 			},
 			options: {
+				animation: false,
 				indexAxis: 'y',
 				responsive: true,
 				maintainAspectRatio: false,
@@ -205,8 +206,9 @@
 					x: {
 						beginAtZero: false,
 						ticks: {
+							stepSize: 3600*24,
 							callback: function (value, index, ticks) {
-								return moment(value * 1000).format("DD. MM. YYYY")
+								return moment(value * 1000).format("DD. MM. YYYY HH:mm")
 							},
 						},
 					},
@@ -214,7 +216,7 @@
 						display: true,
 						title: {
 							display: true,
-							text: "Události: všechny"
+							text: "Události: aktivní"
 						}
 					}
 				},
