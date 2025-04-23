@@ -3,14 +3,15 @@
     --stops-column-count: 0;
     --departures-column-count: 0;
     --infotexts-column-count: 0;
+	color-scheme: light dark;
 }
 
 body.api {
-    background-color: white;
+    background-color: light-dark(white, #272427);
 }
 
 body.rabin {
-    background-color: rgb(237, 226, 240);
+    background-color: light-dark(rgb(237, 226, 240), #55105b);
 }
 
 menu {
@@ -48,7 +49,7 @@ table-head {
 }
 
 table-cell {
-    background-color: #eeeeee;
+    background-color: light-dark(#eee, #363636);
     padding: 0px 3px;
     white-space: nowrap;
 }
@@ -58,7 +59,7 @@ table-cell {
 }
 
 .even {
-    background-color: #f9f9f9;
+    background-color: light-dark(#f9f9f9, #212121);
 }
 
 .first {
@@ -96,8 +97,12 @@ select {
     vertical-align: top;
 }
 
+input[type=submit] {
+	background-color: light-dark(ButtonFace, #ff9f1e);
+}
+
 .help > span {
-    background-color: #fff899;
+    background-color: light-dark(#fff899, #2d346e);
     display: inline-block;
     font-size: smaller;
 }
@@ -114,7 +119,7 @@ select {
 
 #output {
     font-family: monospace;
-    background-color: #d8f2ff;
+    background-color: light-dark(#d8f2ff, #535d62);
     margin: 3px 0px;
     padding: 2px 1px;
 }
@@ -132,8 +137,8 @@ select {
     overflow-x: auto;
 }
 
-a:visited {
-    color: LinkText;
+a, a:visited {
+    color: light-dark(LinkText, #96ceff);
 }
 
 #stops.simple table-grid > :not(.platform_code, .stop_id, .stop_name, .wheelchair_boarding),
@@ -162,82 +167,20 @@ th {
     font-family: sans-serif;
     background-color: #777;
     font-size: 12px;
-    color: white;
+    color: light-dark(white, black);
     font-weight: normal;
 }
 
 tr:nth-child(odd) {
-    background-color: #eee;
+    background-color: light-dark(#eee, #363636);
 }
 
 tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: light-dark(#f9f9f9, #212121);
 }
 
 td {
     white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-
-    body,
-    .help > span,
-    #output,
-    table-cell {
-        color: white;
-    }
-
-    body.api {
-        background-color: #272427;
-    }
-
-    body.rabin {
-        background-color: #55105b;
-    }
-
-    input,
-    select {
-        filter: invert(1);
-    }
-
-    .help > span {
-        background-color: #2d346e;
-    }
-
-    input[type=submit] {
-        background-color: #005fe0;
-    }
-
-    #output {
-        background-color: #535d62;
-    }
-
-    table-cell {
-        background-color: #363636
-    }
-
-    .even {
-        background-color: #212121;
-    }
-
-    /* Infotexts */
-    th {
-        color: black;
-    }
-
-    tr:nth-child(odd) {
-        background-color: #363636;
-    }
-
-    tr:nth-child(even) {
-        background-color: #212121;
-    }
-
-    td {
-        white-space: nowrap;
-    }
-
-
 }
 
 @media (max-width: 800px) {

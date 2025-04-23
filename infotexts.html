@@ -43,7 +43,7 @@
 			production: "api",
 			test: "rabin"
 		}
-
+		let json = null;
 		// Send a request
 		function getData(target) {
 			let request = new XMLHttpRequest();
@@ -63,11 +63,22 @@
 						return;
 					}
 					// Printing the data
-					let json = JSON.parse(this.response);
+					json = JSON.parse(this.response);
 					let toPrint = [];
-					for (let value in json) {
-						toPrint.push(flatten(json[value]));
+					chart.data.datasets = [];
+					for (let value of json) {
+						toPrint.push(flatten(value));
+						chart.data.datasets.push({
+							label: value.text,
+							data: [
+								[
+									parseInt(moment(value.valid_from).format("X"), 10),
+									parseInt(moment(value.valid_to ?? undefined).format("X"), 10)
+								]
+							]
+						})
 					}
+					chart.update();
 					document.getElementById("results").replaceChildren(printTable(toPrint));
 				}
 				else if (this.status != 200) {
@@ -127,7 +138,6 @@
 						cellValue.forEach((item, i) => {
 							cellValue = flatten(item);
 							td.append(cellValue);
-							console.log(cellValue);
 						});
 					}
 					td.innerHTML = cellValue;
@@ -168,5 +178,76 @@
 		changeColor();
 		getData(source.value);
 	</script>
+	<!-- Chart.js for diagram of texts -->
+	<div id="graph"><canvas id="myChart"></canvas></div>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@^4.4.7"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+	<script>
+		const ctx = document.getElementById('myChart');
+		const chart = new Chart(ctx, {
+			plugins: [ChartDataLabels],
+			type: 'bar',
+			data: {
+				labels: [""]
+			},
+			options: {
+				animation: false,
+				indexAxis: 'y',
+				responsive: true,
+				maintainAspectRatio: false,
+				resizeDelay: 50,
+				borderWidth: 1,
+				barPercentage: 0.8,
+				barThickness: "flex",
+				borderSkipped: false,
+				backgroundColor: "#ccc",
+				scales: {
+					x: {
+						beginAtZero: false,
+						ticks: {
+							stepSize: 3600*24,
+							callback: function (value, index, ticks) {
+								return moment(value * 1000).format("DD. MM. YYYY HH:mm")
+							},
+						},
+					},
+					y: {
+						display: true,
+						title: {
+							display: true,
+							text: "Události: aktivní"
+						}
+					}
+				},
+				plugins: {
+					datalabels: {
+						color: '#222',
+						formatter: function (value, context) {
+							return context.dataset.label;
+						},
+					},
+					legend: {
+						display: false,
+					},
+					tooltip: {
+						callbacks: {
+							label: function (context) {
+							let label = context.dataset.label || '';
+								let times = context.raw;
+								label = [
+									label,
+									"Od: " + moment(times[0] * 1000).format("DD. MM. YYYY HH:mm"),
+									"Do: " + moment(times[1] * 1000).format("DD. MM. YYYY HH:mm")
+								]
+								return label;
+							}
+						}
+					}
+				}
+			}
+		})
+	</script>
+
 </body>
 </html>
