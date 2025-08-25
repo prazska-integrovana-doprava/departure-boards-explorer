@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <title>Prohlížeč přestupních tabel do vozidel</title>
+    <title>Prohlížeč přestupních tabel do vozidel verze 4</title>
 </head>
 
 <body>
     <menu>
         <li><a href="golemio.html">Departure boards</a></li>
         <li><a href="public.html">Public boards</a></li>
-        <li>Transfer boards</li>
-        <li><a href="transfer4.html">Transfer boards verze 4</a></li>
+        <li><a href="transfer.html">Transfer boards</a></li>
+        <li>Transfer boards verze 4</li>
         <li><a href="infotexts.html">Infotexts</a></li>
     </menu>
     <div class="help"><span>Kódy CIS bez uvození písmenem <em>c</em></span></div>
@@ -22,15 +22,30 @@
         <label>Zdroj: <select id="source">
                 <option value="api">Produkční</option>
                 <option value="rabin">Testovací</option>
-            </select></label>
-        <label>Zastávky: <input type="number" value="" id="input" size="5" min="1" max="5499999"></label>
+        </select></label>
+        <label>Zastávka CIS: <input type="number" value="" id="cis" size="5" min="1" max="5499999"></label>
         <label>Číslo vlaku: <input type="number" value="" id="trip" size="5" min="1" max="99999"></label>
+        <label>Zastávka ASW: <input type="text" value="" id="asw" size="5"></label>
+        <label>Evidenční číslo vozidla: <input type="number" value="" id="evc" size="5" min="1" max="99999"></label>
+        <label>Druh dopravy: <select id="routeType">
+                <option value="0">0 – tramvaj</option>
+                <option value="1">1 – metro</option>
+                <option value="2">2 – vlak</option>
+                <option value="3">3 – autobus</option>
+                <option value="4">4 – přívoz</option>
+                <option value="7">7 – lanovka</option>
+                <option value="11">11 – trolejbus</option>
+            </select></label>
         <label>Čas dotazu: <input type="datetime-local" id="timestamp"></label>
+        <label>Počet hodnot: <input type="number" id="limit" size="3" min="1" max="1000"></label>
         <input type="submit" id="submit">
     </section>
     <div id="output"></div>
+    <div id="platform_code"></div>
+    <div id="stop_name"></div>
     <div id="departures"></div>
     <div id="infotexts"></div>
+    <div id="icons"></div>
     <div id="time"></div>
     <script src="key.js"></script>
     <!-- Moment.js for processing time strings -->
@@ -38,6 +53,9 @@
     <script>
         const departuresDestination = document.getElementById("departures");
         const infotextDestination = document.getElementById("infotexts");
+        const stopNameDestination = document.getElementById("stop_name");
+        const platformCodeDestination = document.getElementById("platform_code");
+        const iconsDestination = document.getElementById("icons");
         const time = document.getElementById("time");
         const form = document.querySelectorAll('input');
         /* Change background color on source change */
@@ -63,6 +81,12 @@
 
             // Print processing time
             time.innerHTML = `Vytvořeno ${moment().format("YYYY-MM-DD HH:mm:ss")} za ${json.time} ms.`;
+
+            json.platform_code = [{ "platform_code": json.platform_code }];
+            json.stop_name = [{ "stop_name": json.stop_name }];
+            json.departures.forEach((key, value) => {
+                key.departure_timestamp.minutes[1] = key.departure_timestamp.minutes[1] ?? undefined;
+            })
 
             // For every chapten in JSON, print contents to table
             chapters = Object.keys(json);
@@ -158,16 +182,24 @@
 
         /* Collect all values from forms and prepare a query string */
         function prepareUri() {
-            const input = document.getElementById("input").value;
+            const cis = document.getElementById("cis").value;
+            const asw = document.getElementById("asw").value;
             const trip = document.getElementById("trip").value;
+            const evc = document.getElementById("evc").value;
+            const routeType = document.getElementById("routeType").value;
+            const limit = document.getElementById("limit").value;
             const timestamp = document.getElementById("timestamp").value;
 
 
             // Input is processed below
             let parameters = new Array;
-            parameters.push(input ? "cisId=" + input : "");
+            parameters.push(cis ? "cisId=" + cis : "");
+            parameters.push(asw ? "aswId=" + asw : "");
             parameters.push(trip ? "tripNumber=" + trip : "");
+            parameters.push(evc ? "vehicleRegistrationNumber=" + evc : "");
+            parameters.push(routeType ? "routeType=" + routeType : "");
             parameters.push(timestamp ? "timeFrom=" + timestamp : "");
+            parameters.push(limit ? "limit=" + limit : "");
 
             // Process Input
             // Print the query string on screen
@@ -180,7 +212,7 @@
             prepareUri();
 
             // Clear any current tables
-            [departuresDestination, infotextDestination].forEach(
+            [departuresDestination, infotextDestination, stopNameDestination, platformCodeDestination].forEach(
                 function (element) {
                     element.innerHTML = ""
                 });
@@ -188,7 +220,7 @@
             let request = new XMLHttpRequest();
             const source = document.getElementById("source").value;
             request.start = moment.now(); // Start timer
-            url = `https://${source}.golemio.cz/v3/pid/transferboards?${query}`;
+            url = `https://${source}.golemio.cz/v4/pid/transferboards?${query}`;
             request.open('GET', url);
             request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
             request.setRequestHeader('x-access-token', (source === "api") ? KEY : RKEY);
