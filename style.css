@@ -22,6 +22,10 @@ menu > li {
     display: inline-block;
 }
 
+menu > li:last-of-type {
+    float: right;
+}
+
 time[title] {
     text-decoration-style: dashed;
     text-decoration-line: underline;
