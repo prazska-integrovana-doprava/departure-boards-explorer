@@ -25,6 +25,7 @@
 				<option value="test">Testovací</option>
 			</select>
 		</label>
+		<label><input type="checkbox" id="future">Zobrazovat zprávy z budoucnosti</label>
 	</section>
 	<div id="results"></div>
 	<div id="time"></div>
@@ -51,7 +52,8 @@
 		function getData(target) {
 			let request = new XMLHttpRequest();
 			request.start = moment.now(); // Start timer
-			request.open('GET', sourceURL[target]);
+			future = (document.getElementById("future").checked) ? "/?includeFuture=true" : "";
+			request.open('GET', sourceURL[target] + future);
 			request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 			request.setRequestHeader('x-access-token', key[target]);
 
