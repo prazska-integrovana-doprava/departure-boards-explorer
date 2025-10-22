@@ -26,7 +26,8 @@
 		<label>Zastávky: <input type="text" id="input"></label>
 		<label>Počet hodnot: <input type="number" id="limit" size="3"></label>
 		<label>Linky: <input type="text" value="" id="route" size="15" min="-1" max="50"></label>
-		<label>Čas po: <input type="number" value="60" id="after" size="3"></label>
+		<label>Minutes before: <input type="number" value="" id="before" size="3"></label>
+		<label>Minutes after: <input type="number" value="60" id="after" size="3"></label>
 		<input type="submit" id="submit">
 		<label><input type="checkbox" id="simple">Zjednodušené zobrazení</label>
 	</section>
@@ -174,6 +175,7 @@
 			const input = document.getElementById("input").value;
 			const limit = document.getElementById("limit").value;
 			const routes = document.getElementById("route").value;
+			const before = document.getElementById("before").value;
 			const after = document.getElementById("after").value;
 			const submit = document.getElementById("submit");
 			const simple = document.getElementById("simple").checked;
@@ -182,6 +184,7 @@
 
 			// Input is processed below
 			parameters.push(limit ? "limit=" + limit : "");
+			parameters.push(before ? "minutesBefore=" + before : "");
 			parameters.push(after ? "minutesAfter=" + after : "");
 
 			if (routes.length > 0) {
