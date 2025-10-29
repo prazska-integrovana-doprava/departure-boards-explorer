@@ -180,7 +180,7 @@
 					if (cellValue === null) cellValue = "<i>null</i>";
 					// Print link to map
 					if (cell === "stop_lat" && arr[row].stop_lat > 0 && arr[row].stop_lon > 0) {
-						cellValue = `<a href="https://mapa.pid.cz?zoom=18&lon=${arr[row].stop_lon}&lat=${arr[row].stop_lat}" target="_blank">${arr[row].stop_lat}</a>`;
+						cellValue = `<a href="https://mapa.pid.cz?zoom=18&lon=${arr[row].stop_lon}&lat=${arr[row].stop_lat}&stops=true" target="_blank">${arr[row].stop_lat}</a>`;
 					}
 					if (cell === "stop_lon" && arr[row].stop_lat > 0 && arr[row].stop_lon > 0) {
 						cellValue = `<a href="https://mapy.cz/zakladni?x=${arr[row].stop_lon}&y=${arr[row].stop_lat}&z=19&base=ophoto" target="_blank">${arr[row].stop_lon}</a>`;
