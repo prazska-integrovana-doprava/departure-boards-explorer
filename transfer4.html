@@ -214,8 +214,64 @@
             output.innerHTML = `${source.value}: ${query}`;
         }
 
+        // Get GTFS stop ID
+        function getstopIds(aswId){
+            if (!/\d+\/\d+/.test(aswId)) {
+                alert("Nesouhlasí tvar ASW čísla zastávky.");
+                return false;
+            };
+            aswId.replace("/", "_");
+            let GTFSstopIds;
+            fetch(`https://api.golemio.cz/v2/gtfs/stops?aswIds=${aswId}`, {
+                headers: {
+                    "X-Access-Token": KEY
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    GTFSstopIds = data.features.map(stop => stop.properties.stop_id)
+                    return getVehicleIds(JSON.stringify({0: GTFSstopIds}));
+                })
+                .catch(err => console.error(err));
+        }
+
+        function getVehicleIds(GTFSstopIds) {
+            fetch(`https://api.golemio.cz/v2/public/departureboards?stopIds=${GTFSstopIds}&minutesAfter=30`, {
+                headers: {
+                    "X-Access-Token": KEY
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    let vehicles = data[0].map(departure => departure.vehicle.id);
+                    vehicles = vehicles.map(vehicle => {
+                        const [service, mode, evc] = vehicle.split("-");
+                        return [evc, mode];
+                    })
+                    vehicles = new Map(vehicles);
+                    const allowedModes = new Set(["0", "3", "11"]);
+
+                    for (const [evc, mode] of vehicles) {
+                        if (allowedModes.has(mode)) {
+                            document.getElementById("evc").value = evc;
+                            document.getElementById("routeType").value = mode;
+                            departuresDestination.innerHTML = "<b>Vůz automaticky nastaven!</b>"
+                            break; // stop iterating once we find a match
+                        }
+                        else departuresDestination.innerHTML = "<b>Nenalezen vhodný vůz!</b>"
+                    }
+                    
+                })
+                .catch(err => console.error(err));
+        }
+
         // Send request
         function send() {
+            const aswId = document.getElementById("asw").value;
+            if (aswId.length > 0 && document.getElementById("evc").value.length === 0){
+                getstopIds(aswId);
+                return false;
+            }
             prepareUri();
 
             // Clear any current tables
