@@ -26,6 +26,13 @@ menu > li:last-of-type {
     float: right;
 }
 
+#form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
 time[title] {
     text-decoration-style: dashed;
     text-decoration-line: underline;
@@ -164,6 +171,12 @@ a, a:visited {
 
 #results.simple table-grid {
     grid-template-columns: repeat(8, fit-content(100%));
+}
+
+/* Transferboards */
+fieldset {
+    display: inline;
+    border-color: rgb(233, 233, 237);
 }
 
 /* Infotexts */

@@ -24,19 +24,25 @@
                 <option value="api">Produkční</option>
                 <option value="rabin">Testovací</option>
         </select></label>
-        <label>Zastávka CIS: <input type="number" value="" id="cis" size="5" min="1" max="5499999"></label>
-        <label>Číslo vlaku: <input type="number" value="" id="trip" size="5" min="1" max="99999"></label>
-        <label>Zastávka ASW: <input type="text" value="" id="asw" size="5"></label>
-        <label>Evidenční číslo vozidla: <input type="number" value="" id="evc" size="5" min="1" max="99999"></label>
-        <label>Druh dopravy: <select id="routeType">
-                <option value="0">0 – tramvaj</option>
-                <option value="1">1 – metro</option>
-                <option value="2">2 – vlak</option>
-                <option value="3">3 – autobus</option>
-                <option value="4">4 – přívoz</option>
-                <option value="7">7 – lanovka</option>
-                <option value="11">11 – trolejbus</option>
-            </select></label>
+        <fieldset>
+            <legend>Vlaky</legend>
+            <label>Zastávka CIS: <input type="number" value="" id="cis" size="5" min="1" max="5499999"></label>
+            <label>Číslo vlaku: <input type="number" value="" id="trip" size="5" min="1" max="99999"></label>
+        </fieldset>
+        <fieldset>
+            <legend>Ostatní druhy dopravy</legend>
+            <label>Zastávka ASW: <input type="text" value="" id="asw" size="5"></label>
+            <label>Evidenční číslo vozidla: <input type="number" value="" id="evc" size="5" min="1" max="99999"></label>
+            <label>Druh dopravy: <select id="routeType">
+                    <option value="0">0 – tramvaj</option>
+                    <option value="1">1 – metro</option>
+                    <option value="2">2 – vlak</option>
+                    <option value="3">3 – autobus</option>
+                    <option value="4">4 – přívoz</option>
+                    <option value="7">7 – lanovka</option>
+                    <option value="11">11 – trolejbus</option>
+                </select></label>
+        </fieldset>
         <label>Čas dotazu: <input type="datetime-local" id="timestamp"></label>
         <label>Počet hodnot: <input type="number" id="limit" size="3" min="1" max="1000"></label>
         <input type="submit" id="submit">
