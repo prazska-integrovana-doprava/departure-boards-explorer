@@ -240,7 +240,7 @@
                     "X-Access-Token": KEY
                 }
             })
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
                     GTFSstopIds = data.features.map(stop => stop.properties.stop_id)
                     return getVehicleIds(JSON.stringify({0: GTFSstopIds}));
@@ -254,7 +254,7 @@
                     "X-Access-Token": KEY
                 }
             })
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
                     let vehicles = data[0].map(departure => departure.vehicle.id);
                     vehicles = vehicles.map(vehicle => {
@@ -268,10 +268,10 @@
                         if (allowedModes.has(mode)) {
                             document.getElementById("evc").value = evc;
                             document.getElementById("routeType").value = mode;
-                            departuresDestination.innerHTML = "<b>Vůz automaticky nastaven!</b>"
+                            departuresDestination.innerHTML = "<b>Vůz automaticky nastaven!</b>";
                             break; // stop iterating once we find a match
                         }
-                        else departuresDestination.innerHTML = "<b>Nenalezen vhodný vůz!</b>"
+                        else departuresDestination.innerHTML = "<b>Nenalezen vhodný vůz!</b>";
                     }
                     
                 })
