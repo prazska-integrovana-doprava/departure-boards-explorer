@@ -75,6 +75,7 @@ table-cell {
 
 .first {
     text-align: right;
+    grid-column-start: 1;
 }
 
 .first:before {
