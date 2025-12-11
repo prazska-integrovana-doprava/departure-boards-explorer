@@ -257,6 +257,7 @@
                 .then(response => response.json())
                 .then(data => {
                     let vehicles = data[0].map(departure => departure.vehicle.id);
+                    vehicles = vehicles.filter(Boolean);
                     vehicles = vehicles.map(vehicle => {
                         const [service, mode, evc] = vehicle.split("-");
                         return [evc, mode];
