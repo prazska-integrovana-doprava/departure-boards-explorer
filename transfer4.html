@@ -235,7 +235,7 @@
             };
             aswId.replace("/", "_");
             let GTFSstopIds;
-            fetch(`https://api.golemio.cz/v2/gtfs/stops?aswIds=${aswId}`, {
+            fetch(`https://api.golemio.cz/v2/gtfs/stops?limit=1&aswIds=${aswId}`, {
                 headers: {
                     "X-Access-Token": KEY
                 }
