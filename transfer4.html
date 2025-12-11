@@ -18,7 +18,7 @@
         <li><a href="infotexts.html">Infotexts</a></li>
         <li><a href="https://api.golemio.cz/pid/docs/openapi/#/%F0%9F%9A%8F%20PID%20Departure%20Boards%20(v4)/get_v4_pid_transferboards">Swagger dokumentace</a></li>
     </menu>
-    <div class="help"><span>Kódy CIS bez uvození písmenem <em>c</em></span></div>
+    <div class="help"><span>Kódy CIS bez uvození písmenem <em>c</em>. Čísla ASW s lomítkem <code>123/4</code>. Pokud vyplníte jen ASW ID zastávky, program se pokusí u autobusů, tramvají a trolejbusů vyplnit vůz. Poté zkuste znovu odeslat.</span></div>
     <section id="form">
         <label>Zdroj: <select id="source">
                 <option value="api">Produkční</option>
@@ -110,22 +110,35 @@
                 document.documentElement.style.setProperty(`--${chapter}-column-count`, columnCount);
             }
         }
-        // Flattens a JSON object
-        function flatten(obj, prefix, current) {
-            prefix = prefix || []
-            current = current || {}
+            // Flattens a JSON object
+            function flatten(obj, prefix, current) {
+                prefix = prefix || [];
+                current = current || {};
 
-            // Remember kids, null is also an object!
-            if (typeof (obj) === 'object' && obj !== null) {
-                Object.keys(obj).forEach(key => {
-                    this.flatten(obj[key], prefix.concat(key), current)
-                })
-            } else {
-                current[prefix.join('.')] = obj
+                if (Array.isArray(obj)) {
+                    const keyName = prefix[prefix.length - 1]; // last part of the path
+
+                    if (keyName === "icons") {
+                        // Special case: join array into string
+                        current[prefix.join('.')] = obj.join(',');
+                    } else if (obj.length === 0) {
+                        // Replace empty array with null
+                        current[prefix.join('.')] = null;
+                    } else {
+                        obj.forEach((item, index) => {
+                            flatten(item, prefix.concat(index), current);
+                        });
+                    }
+                } else if (typeof obj === 'object' && obj !== null) {
+                    Object.keys(obj).forEach(key => {
+                        flatten(obj[key], prefix.concat(key), current);
+                    });
+                } else {
+                    current[prefix.join('.')] = obj;
+                }
+
+                return current;
             }
-
-            return current;
-        }
 
         var _table_ = document.createElement('table-grid'),
             _th_ = document.createElement('table-head'),
