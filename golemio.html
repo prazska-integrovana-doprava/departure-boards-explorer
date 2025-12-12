@@ -214,7 +214,7 @@
 
 		/* Collect all values from forms and prepare a query string */
 		function prepareUri(){
-			const input = document.getElementById("input").value;
+			const input = document.getElementById("input").value.replace(/(?<=\d)\/(?=\d)/g, "_");
 			const before = document.getElementById("before").value;
 			const after = document.getElementById("after").value;
 			const limit = document.getElementById("limit").value;
