@@ -91,6 +91,7 @@
 
             json.platform_code = [{ "platform_code": json.platform_code }];
             json.stop_name = [{ "stop_name": json.stop_name }];
+            json.icons = [{ "icons": [json.icons].join(",")}];
             json.departures.forEach((key, value) => {
                 key.departure_timestamp.minutes[1] = key.departure_timestamp.minutes[1] ?? undefined;
             })
