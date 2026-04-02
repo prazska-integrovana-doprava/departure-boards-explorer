@@ -252,7 +252,7 @@
 			parameters.push(airCondition ? "" : "airCondition=" + airCondition);
 			parameters.push(order === "real" ? "order=real" : "order=timetable");
 			parameters.push([...skip].map(element => "skip[]=" + element.value).join("&"));
-			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).format("YYYY-MM-DDTHH:mm:ss")) : "");
+			parameters.push(timestamp ? "timeFrom=" + encodeURIComponent(moment(timestamp).toISOString()) : "");
 
 			// Process Input
 			// Masks used to detect correct station ID

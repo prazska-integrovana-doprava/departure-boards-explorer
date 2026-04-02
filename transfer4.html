@@ -219,7 +219,7 @@
             parameters.push(trip ? "tripNumber=" + trip : "");
             parameters.push(evc ? "vehicleRegistrationNumber=" + evc : "");
             parameters.push(routeType ? "routeType=" + routeType : "");
-            parameters.push(timestamp ? "timeFrom=" + timestamp : "");
+            parameters.push(timestamp ? "timeFrom=" + new Date(timestamp).toISOString() : "");
             parameters.push(limit ? "limit=" + limit : "");
 
             // Process Input

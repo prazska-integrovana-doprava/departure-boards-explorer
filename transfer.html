@@ -168,7 +168,7 @@
             let parameters = new Array;
             parameters.push(input ? "cisId=" + input : "");
             parameters.push(trip ? "tripNumber=" + trip : "");
-            parameters.push(timestamp ? "timeFrom=" + timestamp : "");
+            parameters.push(timestamp ? "timeFrom=" + new Date(timestamp).toISOString() : "");
 
             // Process Input
             // Print the query string on screen
