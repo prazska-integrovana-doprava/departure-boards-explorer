@@ -28,6 +28,7 @@
 	<label>Počet hodnot: <input type="number" id="limit" size="3" min="1" max="1000"></label>
 	<label>Ofset: <input type="number" value="" id="offset" size="2" min="0"></label>
 	<label>Total: <input type="number" value="" id="total" size="2" min="1" max="1000"></label>
+	<label>Rádius navazujících: <input type="number" value="" id="appendHeadsignsLimit" size="2" min="0" max="99"></label>
 	<label>Filtr: <select id="filter">
 		<option value="none">none</option>
 		<option value="routeOnce">route once</option>
@@ -220,6 +221,7 @@
 			const limit = document.getElementById("limit").value;
 			const offset = document.getElementById("offset").value;
 			const total = document.getElementById("total").value;
+			const appendHeadsignsLimit = document.getElementById("appendHeadsignsLimit").value;
 			const mode = document.getElementById("mode").value;
 			const includeMetroTrains = document.getElementById("joinTrains").checked;
 			const airCondition = document.getElementById("airCondition").checked;
@@ -244,6 +246,7 @@
 			parameters.push(offset ? "offset=" + offset : "");
 			parameters.push(total ? "total=" + total : "");
 			parameters.push(mode ? "mode=" + mode : "");
+			parameters.push(appendHeadsignsLimit ? "appendHeadsignsLimit=" + appendHeadsignsLimit : "");
 			parameters.push(filter ? "filter=" + filter : "");
 			parameters.push(includeMetroTrains ? "includeMetroTrains=" + includeMetroTrains : "");
 			parameters.push(airCondition ? "" : "airCondition=" + airCondition);
